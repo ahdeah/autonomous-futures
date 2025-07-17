@@ -1,7 +1,19 @@
+import { AirtableTest } from "@/components/test/AirtableTest";
+import { EnvDebug } from "@/components/test/EnvDebug";
+
 export default function Home() {
   return (
     <main className="min-h-screen p-8 bg-af-background">
       <div className="max-w-4xl mx-auto space-y-8">
+        {/* Environment Debug - NEW */}
+        <section>
+          <EnvDebug />
+        </section>
+
+        {/* Airtable Connection Test */}
+        <section>
+          <AirtableTest />
+        </section>
         {/* Typography Test */}
         <section className="space-y-4">
           <h1 className="text-display text-af-charcoal">
