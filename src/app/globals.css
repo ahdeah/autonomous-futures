@@ -1,0 +1,111 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    background-color: #FEFBF8;
+    color: #374151;
+    font-family: 'Inter', system-ui, sans-serif;
+    line-height: 1.6;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    color: #374151;
+    font-weight: 600;
+    line-height: 1.2;
+  }
+}
+
+@layer components {
+  /* Organic card styling */
+  .card-organic {
+    @apply bg-af-warm-white rounded-af-lg shadow-af-md;
+    transform: rotate(-0.2deg);
+    transition: all 300ms ease-out;
+  }
+
+  .card-organic:hover {
+    transform: translateY(-2px) rotate(0deg);
+    box-shadow: 0 8px 24px rgba(107, 114, 128, 0.2);
+  }
+
+  .card-organic:nth-child(even) {
+    transform: rotate(0.2deg);
+  }
+
+  /* Button styles */
+  .btn-primary {
+    @apply bg-af-sage text-af-warm-white px-6 py-3 rounded-af-md font-medium;
+    transition: all 300ms ease-out;
+  }
+
+  .btn-primary:hover {
+    background-color: #8BA176;
+    box-shadow: 0 4px 12px rgba(107, 114, 128, 0.15);
+  }
+
+  .btn-secondary {
+    @apply bg-af-light-sage text-af-charcoal px-6 py-3 rounded-af-md font-medium;
+    transition: all 300ms ease-out;
+  }
+
+  .btn-secondary:hover {
+    background-color: #D5E7D5;
+    box-shadow: 0 1px 3px rgba(107, 114, 128, 0.1);
+  }
+
+  .btn-accent {
+    @apply bg-af-golden text-af-charcoal px-6 py-3 rounded-af-md font-medium;
+    transition: all 300ms ease-out;
+  }
+
+  .btn-accent:hover {
+    background-color: #E68F00;
+    box-shadow: 0 4px 12px rgba(107, 114, 128, 0.15);
+  }
+
+  .btn-disabled {
+    @apply bg-af-disabled text-af-placeholder-text px-6 py-3 rounded-af-md font-medium cursor-not-allowed;
+  }
+
+  /* Placeholder image styles */
+  .placeholder-image {
+    @apply bg-af-placeholder-bg flex items-center justify-center text-af-placeholder-text text-sm font-medium;
+    background-image: linear-gradient(45deg, transparent 25%, rgba(156, 175, 136, 0.1) 25%),
+                      linear-gradient(-45deg, transparent 25%, rgba(156, 175, 136, 0.1) 25%),
+                      linear-gradient(45deg, rgba(156, 175, 136, 0.1) 75%, transparent 75%),
+                      linear-gradient(-45deg, rgba(156, 175, 136, 0.1) 75%, transparent 75%);
+    background-size: 20px 20px;
+    background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+  }
+
+  /* Typography helpers */
+  .text-display {
+    @apply text-4xl font-bold;
+    letter-spacing: -0.025em;
+  }
+
+  .text-heading {
+    @apply text-3xl font-semibold;
+    letter-spacing: -0.015em;
+  }
+
+  .text-subheading {
+    @apply text-xl font-medium;
+  }
+
+  .text-body {
+    @apply text-base font-normal;
+  }
+
+  .text-caption {
+    @apply text-sm font-normal text-af-placeholder-text;
+  }
+}
