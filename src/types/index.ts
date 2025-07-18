@@ -1,20 +1,32 @@
+// src/types/index.ts
 // Core data interfaces for Autonomous Futures platform
-// Designed to handle high percentage of missing data gracefully
+// Updated to match actual CSV field structure from Airtable
 
 export interface CulturalText {
   id: string;
-  Title: string;
-  By?: string;              // Author - 2% missing
-  Country?: string;         // 20% missing
-  Year?: number;           // 16% missing
-  Medium?: string;         // 16% missing - standardized values
-  Genres?: string;         // 13% missing (was 'genre')
-  Image?: string;          // 89% missing - use placeholders
-  Links?: string;          // 40% missing - show disabled state
-  Content?: string;        // Description (was 'description')
-  Principles?: string[];   // Related principle IDs
-  "Design Recommendations"?: string[];
-  Technology?: string[];   // Technology taxonomy IDs
+  
+  // Actual CSV field names from Airtable
+  Title: string;                    // Required field
+  By?: string;                      // Author - 2% missing
+  "By (Web)"?: string;              // Web display version
+  Content?: string;                 // Description/content
+  Country?: string;                 // 20% missing
+  "Text Location"?: string;         // Location field
+  Year?: number;                    // 16% missing
+  "Text Year"?: string;             // Year as string
+  "Exact Date"?: string;            // Specific date
+  Image?: string;                   // 89% missing - use placeholders
+  Genres?: string;                  // 13% missing (plural in CSV)
+  "Genres (Web)"?: number;          // Web display version
+  Medium?: string;                  // 16% missing - standardized values
+  "Related Records"?: number;       // Count field
+  Links?: string;                   // 40% missing - show disabled state
+  Principles?: string;              // Related principle IDs (string, not array)
+  "Principles (Web)"?: string;      // Web display version
+  "Design Recommendations"?: string; // Related recommendations (string, not array)
+  "Design Recommendations (Web)"?: string; // Web display version
+  Technology?: string;              // Technology taxonomy IDs (string, not array)
+  Tags?: number;                    // Tags count
   
   // Computed/display properties for backwards compatibility
   title?: string;
@@ -22,64 +34,101 @@ export interface CulturalText {
   country?: string;
   year?: number;
   medium?: string;
-  genre?: string;
+  genre?: string;                   // Singular form for display
   image?: string;
   links?: string;
   description?: string;
-  designRecommendations?: string[];
-  principles?: string[];
-  technology?: string[];
+  principles?: string[];            // Parsed from string to array
+  designRecommendations?: string[]; // Parsed from string to array
+  technology?: string[];            // Parsed from string to array
 }
 
 export interface Principle {
   id: string;
-  Title: string;
-  OVERARCHING?: string;     // "Yes"/"No" or boolean (was 'isOverarching')
-  "Main Theme"?: string;    // For sub-principles (was 'theme')
-  Content: string;          // Description (was 'description')
-  "Cultural Texts"?: string[]; // Related text IDs
-  "Design Recommendations"?: string[];
-  Profiles?: string[];      // Creator/theorist IDs
+  
+  // Actual CSV field names from Airtable
+  Title: string;                    // Required field
+  IsOverarching?: string;           // "Yes"/"No" string (not boolean in CSV)
+  Theme?: string;                   // Theme name (capital T in CSV)
+  Content?: string;                 // Description content
+  Profiles?: string;                // Related profile IDs (string, not array)
+  "Cultural Texts"?: string;        // Related text IDs (string, not array)
+  "Design Recommendations"?: string; // Related recommendations (string, not array)
+  "Design Recommendations (Web)"?: string; // Web display version
   
   // Computed/display properties for backwards compatibility
   title?: string;
-  isOverarching?: boolean;
-  theme?: string;
+  isOverarching?: boolean;          // Parsed from "Yes"/"No" string
+  theme?: string;                   // Lowercase for filtering
   description?: string;
-  culturalTexts?: string[];
-  designRecommendations?: string[];
-  profiles?: string[];
+  profiles?: string[];              // Parsed from string to array
+  culturalTexts?: string[];         // Parsed from string to array
+  designRecommendations?: string[]; // Parsed from string to array
 }
 
 export interface DesignRecommendation {
   id: string;
-  title: string;
-  content: string;
+  
+  // Actual CSV field names from Airtable
+  Title: string;                    // Required field
+  Content?: string;                 // Main content
+  Footnotes?: string;               // Additional notes
+  "Cultural Texts"?: string;        // Related texts (string, not array)
+  Principles?: string;              // Related principles (string, not array)
+  Technology?: string;              // Related technology (string, not array)
+  Tags?: number;                    // Tags count
+  "Cultural Texts (Web)"?: string;  // Web display version
+  
+  // Computed/display properties for backwards compatibility
+  title?: string;
+  content?: string;
   footnotes?: string;
-  culturalTexts?: string[];
-  principles?: string[];
-  technology?: string[];
-  profiles?: string[];
+  culturalTexts?: string[];         // Parsed from string to array
+  principles?: string[];            // Parsed from string to array
+  technology?: string[];            // Parsed from string to array
 }
 
 export interface Profile {
   id: string;
-  name: string;
-  content?: string;         // Bio
-  photo?: string;          // Profile image
-  culturalTexts?: string[]; // If cultural creator
-  principles?: string[];    // If principle developer
-  designRecommendations?: string[];
+  
+  // Actual CSV field names from Airtable
+  Name: string;                     // Required field
+  Content?: string;                 // Bio content
+  Photo?: string;                   // Profile image URL
+  Profiles?: string;                // Related profiles (string, not array)
+  "Cultural Texts"?: string;        // Related texts (string, not array)
+  Principles?: string;              // Related principles (string, not array)
+  Tags?: number;                    // Tags count
+  
+  // Computed/display properties for backwards compatibility
+  name?: string;
+  content?: string;
+  photo?: string;
+  profiles?: string[];              // Parsed from string to array
+  culturalTexts?: string[];         // Parsed from string to array
+  principles?: string[];            // Parsed from string to array
 }
 
 export interface TechnologyTaxonomy {
   id: string;
-  name: string;
-  category?: string;
+  
+  // Actual CSV field names from Airtable
+  Name: string;                     // Required field
+  Tags?: string;                    // Tags (string, not number)
+  Description?: string;             // Technology description
+  Impact?: string;                  // Impact description
+  Use?: string;                     // Use cases
+  "Cultural Texts"?: string;        // Related texts (string, not array)
+  "Design Recommendations"?: string; // Related recommendations (string, not array)
+  
+  // Computed/display properties for backwards compatibility
+  name?: string;
+  tags?: string[];                  // Parsed from string to array
   description?: string;
-  culturalTexts?: string[];
-  principles?: string[];
-  designRecommendations?: string[];
+  impact?: string;
+  use?: string;
+  culturalTexts?: string[];         // Parsed from string to array
+  designRecommendations?: string[]; // Parsed from string to array
 }
 
 // API Response types
@@ -215,4 +264,16 @@ export interface SearchProps extends BaseComponentProps {
   onSearch: (query: string, filters: SearchFilters) => void;
   initialFilters?: SearchFilters;
   loading?: boolean;
+}
+
+// Utility types for data parsing
+export type StringOrArray = string | string[];
+
+// Helper type for fields that can be either CSV strings or arrays
+export interface ParseableRelations {
+  culturalTexts?: StringOrArray;
+  principles?: StringOrArray;
+  designRecommendations?: StringOrArray;
+  profiles?: StringOrArray;
+  technology?: StringOrArray;
 }

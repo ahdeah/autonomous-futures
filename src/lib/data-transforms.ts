@@ -2,172 +2,169 @@
 import type { CulturalText, Principle } from '@/types';
 
 /**
- * Transform Airtable Cultural Text records to include both 
- * original field names and normalized property names for compatibility
+ * Transform Airtable Cultural Text records to match both CSV field names and component expectations
+ * Based on actual CSV structure: Title, By, Country, Year, Medium, Genres, Image, Links, etc.
  */
 export function transformCulturalText(record: any): CulturalText {
   const transformed = {
-    // Original Airtable field names
+    // Map CSV fields to interface
     id: record.id,
-    Title: record.Title || record.title || '',
-    By: record.By || record.by,
-    Country: record.Country || record.country,
-    Year: record.Year || record.year,
-    Medium: record.Medium || record.medium,
-    Genres: record.Genres || record.genres,
-    Image: record.Image || record.image,
-    Links: record.Links || record.links,
-    Content: record.Content || record.content,
-    Principles: record.Principles || record.principles,
-    "Design Recommendations": record["Design Recommendations"] || record.designRecommendations,
-    Technology: record.Technology || record.technology,
     
-    // Normalized property names for backwards compatibility
+    // Original Airtable field names (from CSV)
+    Title: record.Title || record.title || '',
+    By: record.By || record.by || record.author,
+    "By (Web)": record["By (Web)"] || record.byWeb,
+    Content: record.Content || record.content || record.description,
+    Country: record.Country || record.country,
+    "Text Location": record["Text Location"] || record.textLocation,
+    Year: record.Year || record.year,
+    "Text Year": record["Text Year"] || record.textYear,
+    "Exact Date": record["Exact Date"] || record.exactDate,
+    Medium: record.Medium || record.medium,
+    Genres: record.Genres || record.genres || record.genre, // CSV uses 'Genres' (plural)
+    "Genres (Web)": record["Genres (Web)"] || record.genresWeb,
+    Image: record.Image || record.image,
+    "Related Records": record["Related Records"] || record.relatedRecords,
+    Links: record.Links || record.links,
+    Principles: record.Principles || record.principles,
+    "Principles (Web)": record["Principles (Web)"] || record.principlesWeb,
+    "Design Recommendations": record["Design Recommendations"] || record.designRecommendations,
+    "Design Recommendations (Web)": record["Design Recommendations (Web)"] || record.designRecommendationsWeb,
+    Technology: record.Technology || record.technology,
+    Tags: record.Tags || record.tags,
+    
+    // Normalized property names for component compatibility
     title: record.Title || record.title || '',
-    author: record.By || record.by,
+    author: record.By || record.by || record.author,
     country: record.Country || record.country,
     year: record.Year || record.year,
     medium: record.Medium || record.medium,
-    genre: record.Genres || record.genres, // Note: Airtable uses 'Genres' (plural)
+    genre: record.Genres || record.genres || record.genre, // Map Genres → genre
     image: record.Image || record.image,
     links: record.Links || record.links,
-    description: record.Content || record.content,
-    principles: record.Principles || record.principles,
-    designRecommendations: record["Design Recommendations"] || record.designRecommendations,
-    technology: record.Technology || record.technology,
+    description: record.Content || record.content || record.description,
+    
+    // Parse relation fields from strings to arrays
+    principles: parseRelationField(record.Principles || record.principles),
+    designRecommendations: parseRelationField(record["Design Recommendations"] || record.designRecommendations),
+    technology: parseRelationField(record.Technology || record.technology),
   } as CulturalText;
 
   return transformed;
 }
 
 /**
- * Transform Airtable Principle records to include both 
- * original field names and normalized property names for compatibility
+ * Transform Airtable Principle records to match CSV structure and component expectations
+ * Based on actual CSV structure: Title, IsOverarching, Theme, Content, etc.
  */
 export function transformPrinciple(record: any): Principle {
-  // Handle IsOverarching field - could be "Yes"/"No" string, boolean, or checkbox
-  const isOverarchingValue = record.IsOverarching || record.OVERARCHING || record.overarching;
+  // Handle IsOverarching field - CSV uses "IsOverarching" with "Yes"/"No" values
+  const isOverarchingValue = record.IsOverarching || record.isOverarching || record.OVERARCHING;
   const isOverarching = isOverarchingValue === "Yes" || 
                        isOverarchingValue === true || 
                        isOverarchingValue === "TRUE" ||
-                       isOverarchingValue === "true" ||
-                       isOverarchingValue === "checked";
+                       isOverarchingValue === "true";
 
   const transformed = {
-    // Original Airtable field names (supporting both old and new)
+    // Map CSV fields to interface
     id: record.id,
+    
+    // Original Airtable field names (from CSV)
     Title: record.Title || record.title || '',
-    IsOverarching: record.IsOverarching || record.OVERARCHING || record.overarching,
-    OVERARCHING: record.OVERARCHING || record.IsOverarching || record.overarching, // Backwards compatibility
-    Theme: record.Theme || record["Main Theme"] || record.mainTheme || record.theme,
-    "Main Theme": record["Main Theme"] || record.Theme || record.mainTheme || record.theme, // Backwards compatibility
+    IsOverarching: record.IsOverarching || record.isOverarching,
+    Theme: record.Theme || record.theme, // CSV uses 'Theme' (capital T)
     Content: record.Content || record.content || '',
+    Profiles: record.Profiles || record.profiles,
     "Cultural Texts": record["Cultural Texts"] || record.culturalTexts,
     "Design Recommendations": record["Design Recommendations"] || record.designRecommendations,
-    Profiles: record.Profiles || record.profiles,
+    "Design Recommendations (Web)": record["Design Recommendations (Web)"] || record.designRecommendationsWeb,
     
-    // Normalized property names for backwards compatibility
+    // Normalized property names for component compatibility
     title: record.Title || record.title || '',
     isOverarching: isOverarching,
-    theme: record.Theme || record["Main Theme"] || record.mainTheme || record.theme, // NOW LOOKS FOR NEW FIELD FIRST
+    theme: record.Theme || record.theme, // Map Theme → theme for component filtering
     description: record.Content || record.content || '',
-    culturalTexts: record["Cultural Texts"] || record.culturalTexts,
-    designRecommendations: record["Design Recommendations"] || record.designRecommendations,
-    profiles: record.Profiles || record.profiles,
+    
+    // Parse relation fields from strings to arrays
+    profiles: parseRelationField(record.Profiles || record.profiles),
+    culturalTexts: parseRelationField(record["Cultural Texts"] || record.culturalTexts),
+    designRecommendations: parseRelationField(record["Design Recommendations"] || record.designRecommendations),
   } as Principle;
 
   return transformed;
 }
 
 /**
- * Apply fallback values for missing data according to the platform requirements
+ * Parse comma-separated strings into arrays for relation fields
  */
-export function applyDataFallbacks(culturalText: CulturalText): CulturalText {
+export function parseRelationField(field: string | string[] | undefined): string[] {
+  if (!field) return [];
+  if (Array.isArray(field)) return field;
+  if (typeof field === 'string') {
+    // Split by comma and clean up whitespace
+    return field.split(',').map(item => item.trim()).filter(item => item.length > 0);
+  }
+  return [];
+}
+
+/**
+ * Apply fallback data for missing fields to ensure graceful degradation
+ */
+export function applyDataFallbacks(item: CulturalText): CulturalText {
   return {
-    ...culturalText,
-    // Apply fallbacks for missing data
-    author: culturalText.author || culturalText.By || 'Various',
-    country: culturalText.country || culturalText.Country || 'Not specified',
-    year: culturalText.year || culturalText.Year || undefined,
-    medium: culturalText.medium || culturalText.Medium || 'Mixed Media',
-    genre: culturalText.genre || culturalText.Genres || 'Not specified',
+    ...item,
+    author: item.author || item.By || 'Various',
+    country: item.country || item.Country || 'Various',
+    year: item.year || item.Year || undefined,
+    medium: item.medium || item.Medium || 'Mixed Media',
+    genre: item.genre || item.Genres || 'Speculative Fiction',
+    description: item.description || item.Content || 'Description coming soon.',
+    links: item.links || item.Links || undefined,
+    image: item.image || item.Image || undefined,
     
-    // Ensure both field name versions are present
-    By: culturalText.By || culturalText.author || 'Various',
-    Country: culturalText.Country || culturalText.country || 'Not specified',
-    Medium: culturalText.Medium || culturalText.medium || 'Mixed Media',
-    Genres: culturalText.Genres || culturalText.genre || 'Not specified',
+    // Parse relation fields from strings to arrays
+    principles: parseRelationField(item.Principles || item.principles),
+    designRecommendations: parseRelationField(item["Design Recommendations"] || item.designRecommendations),
+    technology: parseRelationField(item.Technology || item.technology),
   };
 }
 
 /**
- * Get display-friendly year string
+ * Normalize theme names for consistent filtering
+ * Maps theme names to slugs used in Progressive Disclosure
  */
-export function getDisplayYear(year?: number): string {
-  if (!year) return 'Date TBD';
-  return year.toString();
-}
-
-/**
- * Check if cultural text has access link
- */
-export function hasAccessLink(culturalText: CulturalText): boolean {
-  return !!(culturalText.links || culturalText.Links);
-}
-
-/**
- * Check if cultural text has image
- */
-export function hasImage(culturalText: CulturalText): boolean {
-  return !!(culturalText.image || culturalText.Image);
-}
-
-/**
- * Get all unique genres from cultural texts for filtering
- */
-export function extractUniqueGenres(culturalTexts: CulturalText[]): string[] {
-  const genres = new Set<string>();
+export function normalizeThemeForFiltering(theme: string): string {
+  if (!theme || typeof theme !== 'string') return '';
   
-  culturalTexts.forEach(text => {
-    const genre = text.genre || text.Genres;
-    if (genre && genre !== 'Not specified') {
-      // Handle comma-separated genres
-      const genreList = genre.split(',').map(g => g.trim());
-      genreList.forEach(g => genres.add(g));
-    }
+  const normalized = theme.toLowerCase().trim();
+  
+  // Map known theme variations to consistent slugs
+  if (normalized.includes('collective') && normalized.includes('power')) {
+    return 'collective-power';
+  }
+  if (normalized.includes('inclusive') && normalized.includes('engagement')) {
+    return 'inclusive-engagement';
+  }
+  if (normalized.includes('cultural') && normalized.includes('specificity')) {
+    return 'cultural-specificity';
+  }
+  
+  // Return as slug format for unknown themes
+  return normalized.replace(/\s+/g, '-');
+}
+
+/**
+ * Debug helper to log data transformation for troubleshooting
+ */
+export function debugPrincipleTransform(principle: any) {
+  console.log('🔍 Principle Transform Debug:', {
+    originalId: principle.id,
+    originalTitle: principle.Title,
+    originalTheme: principle.Theme,
+    originalIsOverarching: principle.IsOverarching,
+    transformedTitle: principle.title || principle.Title,
+    transformedTheme: principle.theme || principle.Theme,
+    transformedIsOverarching: principle.isOverarching,
+    normalizedTheme: normalizeThemeForFiltering(principle.Theme || principle.theme)
   });
-  
-  return Array.from(genres).sort();
-}
-
-/**
- * Get all unique mediums from cultural texts for filtering
- */
-export function extractUniqueMediums(culturalTexts: CulturalText[]): string[] {
-  const mediums = new Set<string>();
-  
-  culturalTexts.forEach(text => {
-    const medium = text.medium || text.Medium;
-    if (medium && medium !== 'Mixed Media') {
-      mediums.add(medium);
-    }
-  });
-  
-  return Array.from(mediums).sort();
-}
-
-/**
- * Get all unique countries from cultural texts for filtering
- */
-export function extractUniqueCountries(culturalTexts: CulturalText[]): string[] {
-  const countries = new Set<string>();
-  
-  culturalTexts.forEach(text => {
-    const country = text.country || text.Country;
-    if (country && country !== 'Not specified') {
-      countries.add(country);
-    }
-  });
-  
-  return Array.from(countries).sort();
 }

@@ -83,7 +83,7 @@
     box-shadow: 0 4px 12px rgba(107, 114, 128, 0.15);
   }
 
-  /* NEW: Missing btn-outline style */
+  /* Fixed: Complete btn-outline style */
   .btn-outline {
     @apply border-2 border-af-sage text-af-sage bg-transparent px-6 py-3 rounded-af-md font-medium;
     @apply inline-flex items-center justify-center;
@@ -96,41 +96,170 @@
   }
 
   .btn-disabled {
-    @apply bg-af-disabled text-af-placeholder-text px-6 py-3 rounded-af-md font-medium cursor-not-allowed;
-    @apply inline-flex items-center justify-center;
+    @apply bg-af-placeholder-bg text-af-placeholder-text px-6 py-3 rounded-af-md font-medium;
+    @apply inline-flex items-center justify-center cursor-not-allowed;
+    opacity: 0.6;
   }
 
-  /* Placeholder image styles */
-  .placeholder-image {
-    @apply bg-af-placeholder-bg flex items-center justify-center text-af-placeholder-text text-sm font-medium;
-    background-image: linear-gradient(45deg, transparent 25%, rgba(156, 175, 136, 0.1) 25%),
-                      linear-gradient(-45deg, transparent 25%, rgba(156, 175, 136, 0.1) 25%),
-                      linear-gradient(45deg, rgba(156, 175, 136, 0.1) 75%, transparent 75%),
-                      linear-gradient(-45deg, rgba(156, 175, 136, 0.1) 75%, transparent 75%);
-    background-size: 20px 20px;
-    background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
-  }
-
-  /* Typography helpers */
+  /* Typography utilities */
   .text-display {
-    @apply text-4xl font-bold;
-    letter-spacing: -0.025em;
+    @apply text-4xl md:text-5xl lg:text-6xl font-bold;
   }
 
   .text-heading {
-    @apply text-3xl font-semibold;
-    letter-spacing: -0.015em;
+    @apply text-2xl md:text-3xl lg:text-4xl font-semibold;
   }
 
   .text-subheading {
-    @apply text-xl font-medium;
+    @apply text-xl md:text-2xl font-medium;
   }
 
-  .text-body {
-    @apply text-base font-normal;
+  /* Animation utilities */
+  .animate-fade-in {
+    animation: fadeIn 0.4s ease-out;
   }
 
-  .text-caption {
-    @apply text-sm font-normal text-af-placeholder-text;
+  .animate-slide-up {
+    animation: slideUp 0.3s ease-out;
+  }
+
+  /* Placeholder utilities */
+  .placeholder-shimmer {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+
+  /* Missing data indicators */
+  .missing-data-indicator {
+    @apply text-af-placeholder-text italic;
+  }
+
+  .missing-data-button {
+    @apply btn-disabled relative;
+  }
+
+  .missing-data-button::after {
+    content: "Link not available";
+    @apply absolute -top-8 left-1/2 transform -translate-x-1/2;
+    @apply bg-af-charcoal text-af-warm-white text-xs px-2 py-1 rounded;
+    @apply opacity-0 pointer-events-none transition-opacity;
+  }
+
+  .missing-data-button:hover::after {
+    @apply opacity-100;
+  }
+
+  /* Cultural text card specific styles */
+  .cultural-text-card {
+    @apply card-organic overflow-hidden;
+  }
+
+  .cultural-text-image {
+    @apply w-full aspect-[3/4] object-cover;
+  }
+
+  .cultural-text-placeholder {
+    @apply w-full aspect-[3/4] bg-gradient-to-br from-af-sage/20 to-af-golden/20;
+    @apply flex items-center justify-center text-af-primary;
+  }
+
+  /* Principle card specific styles */
+  .principle-card {
+    @apply card-organic p-6;
+  }
+
+  .principle-theme-indicator {
+    @apply w-1 h-6 rounded-full;
+  }
+
+  /* Responsive grid utilities */
+  .grid-cultural-texts {
+    @apply grid gap-6;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+
+  .grid-principles {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8;
+  }
+
+  /* Search and filter styles */
+  .search-container {
+    @apply relative max-w-md mx-auto;
+  }
+
+  .search-input {
+    @apply w-full px-4 py-3 pl-10 pr-4 border border-af-warm-gray/30 rounded-af-md;
+    @apply bg-af-warm-white text-af-charcoal placeholder-af-placeholder-text;
+    @apply focus:outline-none focus:border-af-sage focus:ring-2 focus:ring-af-sage/20;
+  }
+
+  .search-results {
+    @apply absolute top-full left-0 right-0 mt-2 bg-af-warm-white border border-af-warm-gray/30;
+    @apply rounded-af-md shadow-lg z-50 max-h-96 overflow-y-auto;
+  }
+
+  /* Connection indicator styles */
+  .connection-indicator {
+    @apply inline-flex items-center gap-1 text-xs text-af-sage;
+  }
+
+  .connection-count {
+    @apply bg-af-sage/10 text-af-sage px-2 py-1 rounded-full;
+  }
+}
+
+/* Keyframe animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Dark mode support (future enhancement) */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --af-background: #1a202c;
+    --af-warm-white: #2d3748;
+    --af-charcoal: #f7fafc;
+    --af-primary: #e2e8f0;
+  }
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  .card-organic {
+    break-inside: avoid;
+    box-shadow: none;
+    border: 1px solid #e2e8f0;
   }
 }

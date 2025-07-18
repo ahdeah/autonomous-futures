@@ -7,7 +7,6 @@ export default function Home() {
     <main className="min-h-screen bg-af-background">
       {/* Homepage Hero Section */}
       <HomepageHero />
-      
       {/* Progressive Disclosure Section */}
       <ProgressiveDisclosure />
     </main>

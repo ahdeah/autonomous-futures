@@ -48,36 +48,49 @@ const ProgressiveDisclosure: React.FC<ProgressiveDisclosureProps> = ({ className
   const { data: principles, isLoading, error } = usePrinciples();
   const [expandedTheme, setExpandedTheme] = useState<string | null>(null);
 
-  // Group principles by theme with safe array handling
+  // Group principles by theme - now much simpler!
   const themeData: ThemeData[] = React.useMemo(() => {
-    // Ensure principles is an array before processing
     if (!principles || !Array.isArray(principles)) {
       return THEME_CONFIGS.map(config => ({ ...config, principles: [] }));
     }
 
+    // Filter out overarching themes (we don't want to show them as sub-principles)
+    const subPrinciples = principles.filter(p => {
+      const isOverarching = p.IsOverarching === "Yes" || 
+                           p.IsOverarching === "TRUE" ||
+                           p.IsOverarching === "true" ||
+                           p.isOverarching === true;
+      return !isOverarching;
+    });
+
+    console.log('🔍 Sub-principles found:', subPrinciples.length);
+    console.log('🔍 Sample themes in data:', subPrinciples.slice(0, 3).map(p => ({
+      title: p.title || p.Title,
+      theme: p.theme || p.Theme
+    })));
+
     return THEME_CONFIGS.map(config => {
-      try {
-        const themePrinciples = principles.filter(p => {
-          // Safe access to principle properties
-          if (!p || typeof p !== 'object') return false;
-          
-          const principleTheme = p.theme;
-          if (!principleTheme || typeof principleTheme !== 'string') return false;
-          
-          return principleTheme.toLowerCase().replace(/\s+/g, '-') === config.slug;
-        });
+      // Simple string matching now that Theme is text!
+      const themePrinciples = subPrinciples.filter(p => {
+        const principleTheme = p.theme || p.Theme;
         
-        return {
-          ...config,
-          principles: themePrinciples
-        };
-      } catch (err) {
-        console.warn(`Error processing theme ${config.slug}:`, err);
-        return {
-          ...config,
-          principles: []
-        };
-      }
+        // Direct string comparison (case-insensitive)
+        if (!principleTheme) return false;
+        
+        const normalizedPrincipleTheme = principleTheme.trim().toLowerCase();
+        const normalizedConfigName = config.name.toLowerCase();
+        
+        console.log(`🔍 Comparing "${normalizedPrincipleTheme}" with "${normalizedConfigName}"`);
+        
+        return normalizedPrincipleTheme === normalizedConfigName;
+      });
+      
+      console.log(`🔍 Found ${themePrinciples.length} principles for theme: ${config.name}`);
+      
+      return {
+        ...config,
+        principles: themePrinciples
+      };
     });
   }, [principles]);
 
@@ -96,9 +109,11 @@ const ProgressiveDisclosure: React.FC<ProgressiveDisclosureProps> = ({ className
             Principles are loading. Please check back soon to explore how speculative fiction 
             from marginalized communities informs equitable technology design.
           </p>
-          <Link href="/principles" className="btn-primary">
-            View Principles Page
-          </Link>
+          <div className="p-4 bg-red-50 border border-red-200 rounded-af-md max-w-md mx-auto">
+            <p className="text-red-800 text-sm">
+              <strong>Error:</strong> {error instanceof Error ? error.message : 'Unknown error'}
+            </p>
+          </div>
         </div>
       </section>
     );
@@ -122,6 +137,17 @@ const ProgressiveDisclosure: React.FC<ProgressiveDisclosureProps> = ({ className
             </p>
           )}
         </div>
+
+        {/* Debug Info (remove in production) */}
+        {process.env.NODE_ENV === 'development' && (
+          <div className="mb-8 p-4 bg-green-50 border border-green-200 rounded-af-md">
+            <h4 className="font-semibold mb-2">✅ Simplified Theme Matching:</h4>
+            <p className="text-sm">Principles loaded: {principles?.length || 0}</p>
+            <p className="text-sm">Loading: {isLoading ? 'Yes' : 'No'}</p>
+            <p className="text-sm">Theme distribution: {themeData.map(t => `${t.name}: ${t.principles.length}`).join(', ')}</p>
+            <p className="text-xs text-green-600 mt-2">Now using direct text comparison instead of record ID mapping!</p>
+          </div>
+        )}
 
         {/* Theme Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -170,110 +196,111 @@ const ThemeDisclosureCard: React.FC<ThemeDisclosureCardProps> = ({
   onToggle
 }) => {
   const principleCount = Array.isArray(theme.principles) ? theme.principles.length : 0;
-  const hasData = !isLoading && principleCount > 0;
+  const hasData = principleCount > 0;
 
   return (
-    <div
-      className={`
-        ${theme.color}
-        rounded-af-lg border border-af-warm-gray/20 
-        hover:border-af-sage/30 transition-all duration-300
-        hover:shadow-af-md
-        animate-fade-in
-        ${isExpanded ? 'ring-2 ring-af-sage/20' : ''}
-      `}
+    <div 
+      className={`card-organic p-6 hover:shadow-lg transition-all duration-300 ${theme.color}`}
       style={{ animationDelay: `${index * 200}ms` }}
     >
       {/* Card Header */}
-      <div className="p-6">
-        <div className="flex justify-between items-start mb-4">
-          <h3 className="text-xl font-semibold text-af-charcoal">
+      <div className="flex items-start justify-between mb-4">
+        <div className="flex-1">
+          <h3 className="text-xl font-semibold text-af-charcoal mb-2">
             {theme.name}
           </h3>
-          <div className="flex items-center gap-3">
-            <div className="text-right">
-              <span className="text-af-primary text-sm font-medium block">
-                {isLoading ? 'Loading...' : 
-                 hasData ? `${principleCount} principle${principleCount !== 1 ? 's' : ''}` :
-                 'Coming soon'}
-              </span>
+          {isLoading ? (
+            <div className="animate-pulse">
+              <div className="h-3 bg-af-placeholder-bg rounded w-20 mb-1"></div>
+              <div className="h-3 bg-af-placeholder-bg rounded w-16"></div>
             </div>
-            {hasData && (
-              <button
-                onClick={onToggle}
-                className={`
-                  p-2 rounded-af-sm border transition-all duration-200
-                  ${isExpanded 
-                    ? 'bg-af-sage text-af-warm-white border-af-sage shadow-sm' 
-                    : 'bg-af-warm-white text-af-sage border-af-sage/30 hover:border-af-sage hover:bg-af-sage/5'
-                  }
-                `}
-                aria-label={isExpanded ? 'Collapse principles' : 'Expand principles'}
-              >
-                {isExpanded ? <Minus size={16} /> : <Plus size={16} />}
-              </button>
-            )}
-          </div>
+          ) : (
+            <p className={`text-sm ${hasData ? 'text-af-sage' : 'text-af-placeholder-text'}`}>
+              {hasData 
+                ? `${principleCount} principle${principleCount !== 1 ? 's' : ''}`
+                : 'No principles found'
+              }
+            </p>
+          )}
         </div>
-
-        <p className="text-af-primary text-sm leading-relaxed mb-4">
-          {theme.description}
-        </p>
-
-        {/* Principle Preview (collapsed state) */}
-        {hasData && !isExpanded && (
-          <div className="flex flex-wrap gap-2 mb-4">
-            {theme.principles.slice(0, 2).map((principle) => (
-              <span 
-                key={principle?.id || Math.random()}
-                className="text-xs px-3 py-1 bg-af-warm-white/60 rounded-af-sm text-af-charcoal"
-              >
-                {principle?.title || 'Untitled Principle'}
-              </span>
-            ))}
-            {principleCount > 2 && (
-              <span className="text-xs px-3 py-1 text-af-primary font-medium">
-                +{principleCount - 2} more
-              </span>
-            )}
-          </div>
-        )}
-
-        {/* Action Button */}
-        <Link 
-          href={`/principles#${theme.slug}`}
-          className="btn-outline text-sm w-full justify-center"
-        >
-          Explore {theme.name}
-        </Link>
-
-        {/* Expand/Collapse Instructions */}
+        
+        {/* Expand/Collapse Button */}
         {hasData && (
-          <div className="mt-3 text-center">
+          <div className="ml-4">
             <button
               onClick={onToggle}
-              className="text-xs text-af-sage hover:text-af-charcoal transition-colors inline-flex items-center gap-1"
+              className={`
+                w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all duration-200
+                ${isExpanded 
+                  ? 'bg-af-sage text-af-warm-white border-af-sage shadow-sm' 
+                  : 'bg-af-warm-white text-af-sage border-af-sage/30 hover:border-af-sage hover:bg-af-sage/5'
+                }
+              `}
+              aria-label={isExpanded ? 'Collapse principles' : 'Expand principles'}
             >
-              {isExpanded ? (
-                <>
-                  <ChevronUp size={14} />
-                  Hide principles
-                </>
-              ) : (
-                <>
-                  <ChevronDown size={14} />
-                  Show {principleCount} principle{principleCount !== 1 ? 's' : ''}
-                </>
-              )}
+              {isExpanded ? <Minus size={16} /> : <Plus size={16} />}
             </button>
           </div>
         )}
       </div>
 
+      <p className="text-af-primary text-sm leading-relaxed mb-4">
+        {theme.description}
+      </p>
+
+      {/* Principle Preview (collapsed state) */}
+      {hasData && !isExpanded && (
+        <div className="flex flex-wrap gap-2 mb-4">
+          {theme.principles.slice(0, 2).map((principle) => (
+            <span 
+              key={principle?.id || Math.random()}
+              className="text-xs px-3 py-1 bg-af-warm-white/60 rounded-af-sm text-af-charcoal"
+            >
+              {principle?.title || principle?.Title || 'Untitled Principle'}
+            </span>
+          ))}
+          {principleCount > 2 && (
+            <span className="text-xs px-3 py-1 text-af-primary font-medium">
+              +{principleCount - 2} more
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* Action Button */}
+      <Link 
+        href={`/principles#${theme.slug}`}
+        className="btn-outline text-sm w-full justify-center"
+      >
+        Explore {theme.name}
+      </Link>
+
+      {/* Expand/Collapse Instructions */}
+      {hasData && (
+        <div className="mt-3 text-center">
+          <button
+            onClick={onToggle}
+            className="text-xs text-af-sage hover:text-af-charcoal transition-colors inline-flex items-center gap-1"
+          >
+            {isExpanded ? (
+              <>
+                <ChevronUp size={14} />
+                Hide principles
+              </>
+            ) : (
+              <>
+                <ChevronDown size={14} />
+                Show {principleCount} principle{principleCount !== 1 ? 's' : ''}
+              </>
+            )}
+          </button>
+        </div>
+      )}
+
       {/* Expanded Principles List */}
       {isExpanded && hasData && (
-        <div className="border-t border-af-warm-gray/20 bg-af-warm-white/40 animate-fade-in">
-          <div className="p-6 space-y-4">
+        <div className="border-t border-af-warm-gray/20 bg-af-warm-white/40 animate-fade-in mt-4 -mx-6 px-6 pt-4">
+          <div className="space-y-4">
             <h4 className="font-semibold text-af-charcoal mb-3 flex items-center gap-2">
               <span className="w-1 h-6 bg-af-sage rounded-full"></span>
               Principles in this theme:
@@ -299,15 +326,17 @@ interface PrinciplePreviewProps {
 }
 
 const PrinciplePreview: React.FC<PrinciplePreviewProps> = ({ principle }) => {
-  // Safe access to principle properties
-  const title = principle?.title || 'Untitled Principle';
-  const description = principle?.description || 'Principle description coming soon.';
+  // Safe access to principle properties (check both normalized and original fields)
+  const title = principle?.title || principle?.Title || 'Untitled Principle';
+  const description = principle?.description || principle?.Content || 'Principle description coming soon.';
   const truncatedDescription = description.length > 120 
     ? description.slice(0, 120) + '...' 
     : description;
 
   const culturalTextsLength = Array.isArray(principle?.culturalTexts) 
     ? principle.culturalTexts.length 
+    : Array.isArray(principle?.["Cultural Texts"])
+    ? principle["Cultural Texts"].length
     : 0;
 
   return (
