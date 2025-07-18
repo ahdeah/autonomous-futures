@@ -1,6 +1,8 @@
+// src/app/layout.tsx
 import type { Metadata } from "next";
 import "./globals.css";
 import { QueryProvider } from "@/components/providers/QueryProvider";
+import { Header } from "@/components/layout/Header"; // Import the new Header
 
 export const metadata: Metadata = {
   title: "Autonomous Futures - Centering Marginalized Voices in Technology",
@@ -21,9 +23,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased">
+      <body className="antialiased bg-af-background text-af-charcoal">
         <QueryProvider>
+          <Header /> {/* Add the Header here */}
           {children}
+          {/* A Footer component would go here later */}
         </QueryProvider>
       </body>
     </html>
