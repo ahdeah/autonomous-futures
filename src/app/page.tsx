@@ -1,11 +1,12 @@
 import { AirtableTest } from "@/components/test/AirtableTest";
 import { EnvDebug } from "@/components/test/EnvDebug";
+import { PlaceholderTest } from "@/components/test/PlaceholderTest";
 
 export default function Home() {
   return (
     <main className="min-h-screen p-8 bg-af-background">
       <div className="max-w-4xl mx-auto space-y-8">
-        {/* Environment Debug - NEW */}
+        {/* Environment Debug */}
         <section>
           <EnvDebug />
         </section>
@@ -14,6 +15,12 @@ export default function Home() {
         <section>
           <AirtableTest />
         </section>
+
+        {/* Placeholder System Showcase - NEWLY ADDED */}
+        <section>
+          <PlaceholderTest />
+        </section>
+
         {/* Typography Test */}
         <section className="space-y-4">
           <h1 className="text-display text-af-charcoal">
