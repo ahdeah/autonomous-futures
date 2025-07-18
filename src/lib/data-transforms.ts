@@ -1,3 +1,4 @@
+// src/lib/data-transforms.ts
 import type { CulturalText, Principle } from '@/types';
 
 /**
@@ -44,19 +45,22 @@ export function transformCulturalText(record: any): CulturalText {
  * original field names and normalized property names for compatibility
  */
 export function transformPrinciple(record: any): Principle {
-  // Handle OVERARCHING field - could be "Yes"/"No" string or boolean
-  const isOverarchingValue = record.OVERARCHING || record.overarching;
+  // Handle IsOverarching field - could be "Yes"/"No" string, boolean, or checkbox
+  const isOverarchingValue = record.IsOverarching || record.OVERARCHING || record.overarching;
   const isOverarching = isOverarchingValue === "Yes" || 
                        isOverarchingValue === true || 
                        isOverarchingValue === "TRUE" ||
-                       isOverarchingValue === "true";
+                       isOverarchingValue === "true" ||
+                       isOverarchingValue === "checked";
 
   const transformed = {
-    // Original Airtable field names
+    // Original Airtable field names (supporting both old and new)
     id: record.id,
     Title: record.Title || record.title || '',
-    OVERARCHING: record.OVERARCHING || record.overarching,
-    "Main Theme": record["Main Theme"] || record.mainTheme || record.theme,
+    IsOverarching: record.IsOverarching || record.OVERARCHING || record.overarching,
+    OVERARCHING: record.OVERARCHING || record.IsOverarching || record.overarching, // Backwards compatibility
+    Theme: record.Theme || record["Main Theme"] || record.mainTheme || record.theme,
+    "Main Theme": record["Main Theme"] || record.Theme || record.mainTheme || record.theme, // Backwards compatibility
     Content: record.Content || record.content || '',
     "Cultural Texts": record["Cultural Texts"] || record.culturalTexts,
     "Design Recommendations": record["Design Recommendations"] || record.designRecommendations,
@@ -65,7 +69,7 @@ export function transformPrinciple(record: any): Principle {
     // Normalized property names for backwards compatibility
     title: record.Title || record.title || '',
     isOverarching: isOverarching,
-    theme: record["Main Theme"] || record.mainTheme || record.theme,
+    theme: record.Theme || record["Main Theme"] || record.mainTheme || record.theme, // NOW LOOKS FOR NEW FIELD FIRST
     description: record.Content || record.content || '',
     culturalTexts: record["Cultural Texts"] || record.culturalTexts,
     designRecommendations: record["Design Recommendations"] || record.designRecommendations,
