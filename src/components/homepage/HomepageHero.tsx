@@ -43,20 +43,38 @@ const THEME_CONFIGS: Omit<ThemePreview, 'principles' | 'principleCount'>[] = [
 const HomepageHero: React.FC<HomepageHeroProps> = ({ className = '' }) => {
   const { data: principles, isLoading, error } = usePrinciples();
 
-  // Group principles by theme
+  // Group principles by theme with safe array handling
   const themeData: ThemePreview[] = React.useMemo(() => {
-    if (!principles) return THEME_CONFIGS.map(config => ({ ...config, principles: [], principleCount: 0 }));
+    // Ensure principles is an array before processing
+    if (!principles || !Array.isArray(principles)) {
+      return THEME_CONFIGS.map(config => ({ ...config, principles: [], principleCount: 0 }));
+    }
 
     return THEME_CONFIGS.map(config => {
-      const themePrinciples = principles.filter(p => 
-        p.theme?.toLowerCase().replace(/\s+/g, '-') === config.slug
-      );
-      
-      return {
-        ...config,
-        principles: themePrinciples,
-        principleCount: themePrinciples.length
-      };
+      try {
+        const themePrinciples = principles.filter(p => {
+          // Safe access to principle properties
+          if (!p || typeof p !== 'object') return false;
+          
+          const principleTheme = p.theme;
+          if (!principleTheme || typeof principleTheme !== 'string') return false;
+          
+          return principleTheme.toLowerCase().replace(/\s+/g, '-') === config.slug;
+        });
+        
+        return {
+          ...config,
+          principles: themePrinciples,
+          principleCount: themePrinciples.length
+        };
+      } catch (err) {
+        console.warn(`Error processing theme ${config.slug}:`, err);
+        return {
+          ...config,
+          principles: [],
+          principleCount: 0
+        };
+      }
     });
   }, [principles]);
 
@@ -107,7 +125,7 @@ const HomepageHero: React.FC<HomepageHeroProps> = ({ className = '' }) => {
               <p className="text-af-primary">
                 {isLoading ? 'Loading principles...' : 
                  error ? 'Principles coming soon' :
-                 `${principles?.length || 0} principles across 3 interconnected themes`}
+                 `${Array.isArray(principles) ? principles.length : 0} principles across 3 interconnected themes`}
               </p>
             </div>
 
@@ -167,14 +185,14 @@ const ThemeCard: React.FC<ThemeCardProps> = ({ theme, index, isLoading }) => {
         </p>
         
         {/* Principle Preview (if loaded) */}
-        {!isLoading && theme.principles.length > 0 && (
+        {!isLoading && Array.isArray(theme.principles) && theme.principles.length > 0 && (
           <div className="flex flex-wrap gap-2">
             {theme.principles.slice(0, 3).map((principle) => (
               <span 
-                key={principle.id}
+                key={principle?.id || Math.random()}
                 className="text-xs px-2 py-1 bg-af-warm-white/60 rounded-af-sm text-af-charcoal"
               >
-                {principle.title}
+                {principle?.title || 'Untitled Principle'}
               </span>
             ))}
             {theme.principles.length > 3 && (

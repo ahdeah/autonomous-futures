@@ -52,6 +52,7 @@
   /* Button styles */
   .btn-primary {
     @apply bg-af-sage text-af-warm-white px-6 py-3 rounded-af-md font-medium;
+    @apply inline-flex items-center justify-center;
     transition: all 300ms ease-out;
   }
 
@@ -62,6 +63,7 @@
 
   .btn-secondary {
     @apply bg-af-light-sage text-af-charcoal px-6 py-3 rounded-af-md font-medium;
+    @apply inline-flex items-center justify-center;
     transition: all 300ms ease-out;
   }
 
@@ -72,6 +74,7 @@
 
   .btn-accent {
     @apply bg-af-golden text-af-charcoal px-6 py-3 rounded-af-md font-medium;
+    @apply inline-flex items-center justify-center;
     transition: all 300ms ease-out;
   }
 
@@ -80,8 +83,21 @@
     box-shadow: 0 4px 12px rgba(107, 114, 128, 0.15);
   }
 
+  /* NEW: Missing btn-outline style */
+  .btn-outline {
+    @apply border-2 border-af-sage text-af-sage bg-transparent px-6 py-3 rounded-af-md font-medium;
+    @apply inline-flex items-center justify-center;
+    transition: all 300ms ease-out;
+  }
+
+  .btn-outline:hover {
+    @apply bg-af-sage text-af-warm-white;
+    box-shadow: 0 4px 12px rgba(156, 175, 136, 0.3);
+  }
+
   .btn-disabled {
     @apply bg-af-disabled text-af-placeholder-text px-6 py-3 rounded-af-md font-medium cursor-not-allowed;
+    @apply inline-flex items-center justify-center;
   }
 
   /* Placeholder image styles */

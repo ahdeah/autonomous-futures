@@ -5,45 +5,38 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { CulturalText, Principle, DesignRecommendation, Profile, TechnologyTaxonomy } from '@/types';
 
-const AIRTABLE_BASE_URL = 'https://api.airtable.com/v0';
-const BASE_ID = process.env.NEXT_PUBLIC_AIRTABLE_BASE_ID;
-const API_TOKEN = process.env.NEXT_PUBLIC_AIRTABLE_API_TOKEN;
-
-// Generic Airtable fetch function
-async function fetchAirtableTable<T>(tableName: string): Promise<T[]> {
-  if (!BASE_ID || !API_TOKEN) {
-    console.warn('Airtable credentials not configured');
-    return [];
-  }
-
+// Use internal API routes instead of direct Airtable calls (secure approach)
+async function fetchFromAPI<T>(endpoint: string): Promise<T[]> {
   try {
-    const response = await fetch(`${AIRTABLE_BASE_URL}/${BASE_ID}/${tableName}`, {
+    const response = await fetch(`/api/${endpoint}`, {
+      method: 'GET',
       headers: {
-        'Authorization': `Bearer ${API_TOKEN}`,
         'Content-Type': 'application/json',
       },
     });
-
+    
     if (!response.ok) {
-      throw new Error(`Airtable API error: ${response.status}`);
+      throw new Error(`API error: ${response.status} ${response.statusText}`);
     }
 
     const data = await response.json();
-    return data.records.map((record: any) => ({
-      id: record.id,
-      ...record.fields
-    }));
+    
+    if (!data.success) {
+      throw new Error(data.error || 'API request failed');
+    }
+
+    return data.data || [];
   } catch (error) {
-    console.error(`Error fetching ${tableName}:`, error);
+    console.error(`Error fetching ${endpoint}:`, error);
     throw error;
   }
 }
 
-// Individual table hooks
+// Individual table hooks using secure API routes
 export function useCulturalTexts() {
   return useQuery({
     queryKey: ['cultural-texts'],
-    queryFn: () => fetchAirtableTable<CulturalText>('Cultural Texts'),
+    queryFn: () => fetchFromAPI<CulturalText>('cultural-texts'),
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: 2,
     retryDelay: 1000,
@@ -53,7 +46,7 @@ export function useCulturalTexts() {
 export function usePrinciples() {
   return useQuery({
     queryKey: ['principles'],
-    queryFn: () => fetchAirtableTable<Principle>('Principles'),
+    queryFn: () => fetchFromAPI<Principle>('principles'),
     staleTime: 5 * 60 * 1000,
     retry: 2,
     retryDelay: 1000,
@@ -63,7 +56,7 @@ export function usePrinciples() {
 export function useDesignRecommendations() {
   return useQuery({
     queryKey: ['design-recommendations'],
-    queryFn: () => fetchAirtableTable<DesignRecommendation>('Design Recommendations'),
+    queryFn: () => fetchFromAPI<DesignRecommendation>('design-recommendations'),
     staleTime: 5 * 60 * 1000,
     retry: 2,
     retryDelay: 1000,
@@ -73,7 +66,7 @@ export function useDesignRecommendations() {
 export function useProfiles() {
   return useQuery({
     queryKey: ['profiles'],
-    queryFn: () => fetchAirtableTable<Profile>('Profiles'),
+    queryFn: () => fetchFromAPI<Profile>('profiles'),
     staleTime: 10 * 60 * 1000, // 10 minutes (profiles change less frequently)
     retry: 2,
     retryDelay: 1000,
@@ -83,7 +76,7 @@ export function useProfiles() {
 export function useTechnologyTaxonomy() {
   return useQuery({
     queryKey: ['technology-taxonomy'],
-    queryFn: () => fetchAirtableTable<TechnologyTaxonomy>('Technology Taxonomy'),
+    queryFn: () => fetchFromAPI<TechnologyTaxonomy>('technology-taxonomy'),
     staleTime: 15 * 60 * 1000, // 15 minutes (taxonomy is relatively stable)
     retry: 2,
     retryDelay: 1000,

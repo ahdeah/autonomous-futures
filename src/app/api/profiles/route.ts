@@ -1,18 +1,18 @@
-// src/app/api/cultural-texts/route.ts
+// src/app/api/profiles/route.ts
 import { NextResponse } from 'next/server';
 import { airtableApi } from '@/lib/airtable';
 
 export async function GET() {
   try {
-    const culturalTexts = await airtableApi.getCulturalTexts();
+    const profiles = await airtableApi.getProfiles();
     
     return NextResponse.json({
       success: true,
-      data: culturalTexts,
-      count: culturalTexts.length
+      data: profiles,
+      count: profiles.length
     });
   } catch (error) {
-    console.error('API Error (cultural-texts):', error);
+    console.error('API Error (profiles):', error);
     
     return NextResponse.json(
       {

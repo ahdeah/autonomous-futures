@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePrinciples } from '@/hooks/useAirtable';
 import { Principle } from '@/types';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, Plus, Minus } from 'lucide-react';
 
 interface ThemeData {
   name: string;
@@ -48,21 +48,36 @@ const ProgressiveDisclosure: React.FC<ProgressiveDisclosureProps> = ({ className
   const { data: principles, isLoading, error } = usePrinciples();
   const [expandedTheme, setExpandedTheme] = useState<string | null>(null);
 
-  // Group principles by theme
+  // Group principles by theme with safe array handling
   const themeData: ThemeData[] = React.useMemo(() => {
-    if (!principles) {
+    // Ensure principles is an array before processing
+    if (!principles || !Array.isArray(principles)) {
       return THEME_CONFIGS.map(config => ({ ...config, principles: [] }));
     }
 
     return THEME_CONFIGS.map(config => {
-      const themePrinciples = principles.filter(p => 
-        p.theme?.toLowerCase().replace(/\s+/g, '-') === config.slug
-      );
-      
-      return {
-        ...config,
-        principles: themePrinciples
-      };
+      try {
+        const themePrinciples = principles.filter(p => {
+          // Safe access to principle properties
+          if (!p || typeof p !== 'object') return false;
+          
+          const principleTheme = p.theme;
+          if (!principleTheme || typeof principleTheme !== 'string') return false;
+          
+          return principleTheme.toLowerCase().replace(/\s+/g, '-') === config.slug;
+        });
+        
+        return {
+          ...config,
+          principles: themePrinciples
+        };
+      } catch (err) {
+        console.warn(`Error processing theme ${config.slug}:`, err);
+        return {
+          ...config,
+          principles: []
+        };
+      }
     });
   }, [principles]);
 
@@ -101,7 +116,7 @@ const ProgressiveDisclosure: React.FC<ProgressiveDisclosureProps> = ({ className
             Discover how speculative fiction from marginalized communities 
             informs equitable technology design through interconnected principles.
           </p>
-          {!isLoading && principles && (
+          {!isLoading && Array.isArray(principles) && principles.length > 0 && (
             <p className="text-af-sage font-medium mt-2">
               {principles.length} principles across 3 interconnected themes
             </p>
@@ -123,7 +138,7 @@ const ProgressiveDisclosure: React.FC<ProgressiveDisclosureProps> = ({ className
         </div>
 
         {/* Call to Action */}
-        {!isLoading && principles && principles.length > 0 && (
+        {!isLoading && Array.isArray(principles) && principles.length > 0 && (
           <div className="text-center mt-12">
             <Link 
               href="/principles"
@@ -154,7 +169,7 @@ const ThemeDisclosureCard: React.FC<ThemeDisclosureCardProps> = ({
   isExpanded,
   onToggle
 }) => {
-  const principleCount = theme.principles.length;
+  const principleCount = Array.isArray(theme.principles) ? theme.principles.length : 0;
   const hasData = !isLoading && principleCount > 0;
 
   return (
@@ -165,6 +180,7 @@ const ThemeDisclosureCard: React.FC<ThemeDisclosureCardProps> = ({
         hover:border-af-sage/30 transition-all duration-300
         hover:shadow-af-md
         animate-fade-in
+        ${isExpanded ? 'ring-2 ring-af-sage/20' : ''}
       `}
       style={{ animationDelay: `${index * 200}ms` }}
     >
@@ -174,19 +190,27 @@ const ThemeDisclosureCard: React.FC<ThemeDisclosureCardProps> = ({
           <h3 className="text-xl font-semibold text-af-charcoal">
             {theme.name}
           </h3>
-          <div className="text-right">
-            <span className="text-af-primary text-sm font-medium block">
-              {isLoading ? 'Loading...' : 
-               hasData ? `${principleCount} principle${principleCount !== 1 ? 's' : ''}` :
-               'Coming soon'}
-            </span>
+          <div className="flex items-center gap-3">
+            <div className="text-right">
+              <span className="text-af-primary text-sm font-medium block">
+                {isLoading ? 'Loading...' : 
+                 hasData ? `${principleCount} principle${principleCount !== 1 ? 's' : ''}` :
+                 'Coming soon'}
+              </span>
+            </div>
             {hasData && (
               <button
                 onClick={onToggle}
-                className="text-af-sage hover:text-af-charcoal transition-colors mt-1"
+                className={`
+                  p-2 rounded-af-sm border transition-all duration-200
+                  ${isExpanded 
+                    ? 'bg-af-sage text-af-warm-white border-af-sage shadow-sm' 
+                    : 'bg-af-warm-white text-af-sage border-af-sage/30 hover:border-af-sage hover:bg-af-sage/5'
+                  }
+                `}
                 aria-label={isExpanded ? 'Collapse principles' : 'Expand principles'}
               >
-                {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                {isExpanded ? <Minus size={16} /> : <Plus size={16} />}
               </button>
             )}
           </div>
@@ -201,10 +225,10 @@ const ThemeDisclosureCard: React.FC<ThemeDisclosureCardProps> = ({
           <div className="flex flex-wrap gap-2 mb-4">
             {theme.principles.slice(0, 2).map((principle) => (
               <span 
-                key={principle.id}
+                key={principle?.id || Math.random()}
                 className="text-xs px-3 py-1 bg-af-warm-white/60 rounded-af-sm text-af-charcoal"
               >
-                {principle.title}
+                {principle?.title || 'Untitled Principle'}
               </span>
             ))}
             {principleCount > 2 && (
@@ -222,17 +246,46 @@ const ThemeDisclosureCard: React.FC<ThemeDisclosureCardProps> = ({
         >
           Explore {theme.name}
         </Link>
+
+        {/* Expand/Collapse Instructions */}
+        {hasData && (
+          <div className="mt-3 text-center">
+            <button
+              onClick={onToggle}
+              className="text-xs text-af-sage hover:text-af-charcoal transition-colors inline-flex items-center gap-1"
+            >
+              {isExpanded ? (
+                <>
+                  <ChevronUp size={14} />
+                  Hide principles
+                </>
+              ) : (
+                <>
+                  <ChevronDown size={14} />
+                  Show {principleCount} principle{principleCount !== 1 ? 's' : ''}
+                </>
+              )}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Expanded Principles List */}
       {isExpanded && hasData && (
-        <div className="border-t border-af-warm-gray/20 bg-af-warm-white/40">
+        <div className="border-t border-af-warm-gray/20 bg-af-warm-white/40 animate-fade-in">
           <div className="p-6 space-y-4">
-            <h4 className="font-semibold text-af-charcoal mb-3">
+            <h4 className="font-semibold text-af-charcoal mb-3 flex items-center gap-2">
+              <span className="w-1 h-6 bg-af-sage rounded-full"></span>
               Principles in this theme:
             </h4>
-            {theme.principles.map((principle) => (
-              <PrinciplePreview key={principle.id} principle={principle} />
+            {theme.principles.map((principle, idx) => (
+              <div
+                key={principle?.id || idx}
+                className="animate-slide-up"
+                style={{ animationDelay: `${idx * 100}ms` }}
+              >
+                <PrinciplePreview principle={principle} />
+              </div>
             ))}
           </div>
         </div>
@@ -246,26 +299,32 @@ interface PrinciplePreviewProps {
 }
 
 const PrinciplePreview: React.FC<PrinciplePreviewProps> = ({ principle }) => {
-  const description = principle.description || 'Principle description coming soon.';
+  // Safe access to principle properties
+  const title = principle?.title || 'Untitled Principle';
+  const description = principle?.description || 'Principle description coming soon.';
   const truncatedDescription = description.length > 120 
     ? description.slice(0, 120) + '...' 
     : description;
 
+  const culturalTextsLength = Array.isArray(principle?.culturalTexts) 
+    ? principle.culturalTexts.length 
+    : 0;
+
   return (
-    <Link href={`/principles/${principle.id}`}>
-      <div className="group p-4 bg-af-warm-white rounded-af-sm hover:bg-af-background transition-colors border border-transparent hover:border-af-sage/20">
+    <Link href={`/principles/${principle?.id || '#'}`}>
+      <div className="group p-4 bg-af-warm-white rounded-af-sm hover:bg-af-background transition-colors border border-transparent hover:border-af-sage/20 hover:shadow-sm">
         <h5 className="font-medium text-af-charcoal group-hover:text-af-sage transition-colors mb-2">
-          {principle.title}
+          {title}
         </h5>
         <p className="text-sm text-af-primary leading-relaxed">
           {truncatedDescription}
         </p>
         
         {/* Connection indicators */}
-        {principle.culturalTexts && principle.culturalTexts.length > 0 && (
+        {culturalTextsLength > 0 && (
           <div className="mt-3">
             <span className="text-xs text-af-sage">
-              → Inspired by {principle.culturalTexts.length} cultural text{principle.culturalTexts.length !== 1 ? 's' : ''}
+              → Inspired by {culturalTextsLength} cultural text{culturalTextsLength !== 1 ? 's' : ''}
             </span>
           </div>
         )}

@@ -1,18 +1,18 @@
-// src/app/api/cultural-texts/route.ts
+// src/app/api/design-recommendations/route.ts
 import { NextResponse } from 'next/server';
 import { airtableApi } from '@/lib/airtable';
 
 export async function GET() {
   try {
-    const culturalTexts = await airtableApi.getCulturalTexts();
+    const designRecommendations = await airtableApi.getDesignRecommendations();
     
     return NextResponse.json({
       success: true,
-      data: culturalTexts,
-      count: culturalTexts.length
+      data: designRecommendations,
+      count: designRecommendations.length
     });
   } catch (error) {
-    console.error('API Error (cultural-texts):', error);
+    console.error('API Error (design-recommendations):', error);
     
     return NextResponse.json(
       {
@@ -24,3 +24,4 @@ export async function GET() {
     );
   }
 }
+

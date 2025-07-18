@@ -1,18 +1,18 @@
-// src/app/api/cultural-texts/route.ts
+// src/app/api/technology-taxonomy/route.ts
 import { NextResponse } from 'next/server';
 import { airtableApi } from '@/lib/airtable';
 
 export async function GET() {
   try {
-    const culturalTexts = await airtableApi.getCulturalTexts();
+    const technologyTaxonomy = await airtableApi.getTechnologyTaxonomy();
     
     return NextResponse.json({
       success: true,
-      data: culturalTexts,
-      count: culturalTexts.length
+      data: technologyTaxonomy,
+      count: technologyTaxonomy.length
     });
   } catch (error) {
-    console.error('API Error (cultural-texts):', error);
+    console.error('API Error (technology-taxonomy):', error);
     
     return NextResponse.json(
       {
