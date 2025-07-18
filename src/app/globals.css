@@ -40,6 +40,15 @@
     transform: rotate(0.2deg);
   }
 
+  /* New: Card organic rotation utility */
+  .card-organic-rotation {
+    transform: rotate(-0.2deg);
+  }
+
+  .card-organic-rotation:nth-child(even) {
+    transform: rotate(0.2deg);
+  }
+
   /* Button styles */
   .btn-primary {
     @apply bg-af-sage text-af-warm-white px-6 py-3 rounded-af-md font-medium;

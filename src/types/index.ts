@@ -147,12 +147,68 @@ export interface BaseComponentProps {
 }
 
 export interface CardProps extends BaseComponentProps {
+  variant?: 'default' | 'organic' | 'minimal';
+  hover?: boolean;
+  rotation?: 'subtle' | 'none' | 'random';
+  shadow?: 'sm' | 'md' | 'lg';
+  onClick?: () => void;
+}
+
+export interface ContentCardProps extends CardProps {
   title: string;
   subtitle?: string;
+  description?: string;
   image?: string;
-  placeholder?: boolean;
-  disabled?: boolean;
-  onClick?: () => void;
+  tags?: string[];
+  connections?: ConnectionIndicator[];
+  actions?: React.ReactNode;
+  missingDataFallbacks?: MissingDataConfig;
+}
+
+export interface ConnectionIndicator {
+  id: string;
+  type: 'principle' | 'text' | 'recommendation' | 'profile';
+  title: string;
+  count?: number;
+  href?: string;
+}
+
+export interface MissingDataConfig {
+  showImagePlaceholder?: boolean;
+  showDescriptionFallback?: boolean;
+  showActionsFallback?: boolean;
+  placeholderText?: {
+    description?: string;
+    actions?: string;
+  };
+}
+
+// Card layout configurations
+export interface CardLayoutProps {
+  layout?: 'grid' | 'list' | 'compact';
+  responsive?: {
+    mobile: number; // columns on mobile
+    tablet: number; // columns on tablet
+    desktop: number; // columns on desktop
+  };
+}
+
+// For cultural text cards specifically
+export interface CulturalTextCardProps extends ContentCardProps {
+  text: CulturalText;
+  showConnections?: boolean;
+  showGenre?: boolean;
+  showYear?: boolean;
+  onTextClick?: (text: CulturalText) => void;
+}
+
+// For principle cards specifically  
+export interface PrincipleCardProps extends ContentCardProps {
+  principle: Principle;
+  showTheme?: boolean;
+  showConnectionCount?: boolean;
+  isExpanded?: boolean;
+  onExpand?: (principle: Principle) => void;
 }
 
 export interface SearchProps extends BaseComponentProps {

@@ -1,6 +1,7 @@
 import { AirtableTest } from "@/components/test/AirtableTest";
 import { EnvDebug } from "@/components/test/EnvDebug";
 import { PlaceholderTest } from "@/components/test/PlaceholderTest";
+import { CardTest } from "@/components/test/CardTest";
 
 export default function Home() {
   return (
@@ -16,9 +17,14 @@ export default function Home() {
           <AirtableTest />
         </section>
 
-        {/* Placeholder System Showcase - NEWLY ADDED */}
+        {/* Placeholder System Showcase */}
         <section>
           <PlaceholderTest />
+        </section>
+
+        {/* NEW: Base Card Component Showcase */}
+        <section>
+          <CardTest />
         </section>
 
         {/* Typography Test */}
