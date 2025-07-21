@@ -1,5 +1,5 @@
 // src/lib/data-transforms.ts
-import type { CulturalText, Principle } from '@/types';
+import type { CulturalText, Principle, DesignRecommendation } from '@/types';
 
 /**
  * Transform Airtable Cultural Text records to match both CSV field names and component expectations
@@ -92,6 +92,28 @@ export function transformPrinciple(record: any): Principle {
   } as Principle;
 
   return transformed;
+}
+
+export function transformDesignRecommendation(record: any): DesignRecommendation {
+  return {
+    id: record.id,
+    Title: record.Title || '',
+    Content: record.Content || '',
+    Footnotes: record.Footnotes,
+    "Cultural Texts": record["Cultural Texts"],
+    Principles: record.Principles,
+    Technology: record.Technology,
+    
+    // Normalized properties
+    title: record.Title || '',
+    content: record.Content || '',
+    footnotes: record.Footnotes,
+    
+    // Parse relations
+    culturalTexts: parseRelationField(record["Cultural Texts"]),
+    principles: parseRelationField(record.Principles),
+    technology: parseRelationField(record.Technology),
+  } as DesignRecommendation;
 }
 
 /**

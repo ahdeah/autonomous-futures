@@ -62,21 +62,6 @@ export default async function PrinciplePage(props: PrinciplePageProps) {
           </p>
         </header>
 
-        {/* Cultural Foundation Section */}
-        <section className="mb-12">
-          <h2 className="text-heading mb-2">Cultural Foundation</h2>
-          <p className="text-af-primary mb-6">This principle is inspired by the following cultural texts:</p>
-          {culturalTexts && culturalTexts.length > 0 ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {culturalTexts.map((text) => (
-                <CulturalTextCard key={text.id} text={text} />
-              ))}
-            </div>
-          ) : (
-            <p className="text-af-placeholder-text italic">No cultural texts are connected to this principle yet.</p>
-          )}
-        </section>
-
         {/* Design Recommendations Section */}
         <section>
           <h2 className="text-heading mb-6">How to Apply This Principle</h2>
@@ -96,6 +81,23 @@ export default async function PrinciplePage(props: PrinciplePageProps) {
             <p className="text-af-placeholder-text italic">No design recommendations are connected to this principle yet.</p>
           )}
         </section>
+
+        {/* Cultural Foundation Section */}
+        <section className="mb-12">
+          <h2 className="text-heading mb-2">Cultural Foundation</h2>
+          <p className="text-af-primary mb-6">This principle is inspired by the following cultural texts:</p>
+          {culturalTexts && culturalTexts.length > 0 ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {culturalTexts.map((text) => (
+                <CulturalTextCard key={text.id} text={text} />
+              ))}
+            </div>
+          ) : (
+            <p className="text-af-placeholder-text italic">No cultural texts are connected to this principle yet.</p>
+          )}
+        </section>
+
+        
       </div>
     </main>
   );

@@ -1,5 +1,5 @@
 import Airtable from 'airtable';
-import { transformCulturalText, transformPrinciple, applyDataFallbacks } from './data-transforms';
+import { transformCulturalText, transformPrinciple, transformDesignRecommendation, applyDataFallbacks } from './data-transforms';
 import type { 
   CulturalText, 
   Principle, 
@@ -90,6 +90,8 @@ async function fetchRecords<T>(
         return applyDataFallbacks(transformCulturalText(rawData));
       } else if (tableName === TABLES.PRINCIPLES) {
         return transformPrinciple(rawData);
+      } else if (tableName === TABLES.DESIGN_RECOMMENDATIONS) {
+        return transformDesignRecommendation(rawData);
       }
       
       // Default transformation for other tables
