@@ -13,7 +13,7 @@ interface PrinciplePageProps {
 }
 
 export default async function PrinciplePage(props: PrinciplePageProps) {
-  const { id } = props.params;
+  const { id } = await props.params;
 
   const [principle, culturalTexts, designRecommendations] = await Promise.all([
     airtableApi.getPrinciple(id),
