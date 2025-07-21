@@ -1,5 +1,6 @@
 // src/app/principles/page.tsx
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs';
+import { PrinciplesAccordion } from '@/components/principles/PrinciplesAccordian'; // Import the new component
 
 export default function PrinciplesPage() {
   const breadcrumbItems = [{ label: 'Principles', href: '/principles' }];
@@ -18,10 +19,8 @@ export default function PrinciplesPage() {
           </p>
         </div>
 
-        {/* The interactive accordion component will go here in the next step */}
-        <div className="p-8 text-center border-2 border-dashed border-af-placeholder-bg rounded-af-lg">
-          <p className="text-af-placeholder-text">Principle Accordion Coming Soon...</p>
-        </div>
+        {/* Replace the placeholder with the interactive accordion */}
+        <PrinciplesAccordion />
       </div>
     </main>
   );
