@@ -2,7 +2,7 @@
 import { notFound } from 'next/navigation';
 import { airtableApi, connections } from '@/lib/airtable';
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs';
-import { CulturalTextCard } from '@/components/cultural-texts/CulturalTextCard'; // Import new component
+import { CulturalTextCard } from '@/components/cultural-texts/CulturalTextCard';
 import { Principle, CulturalText, DesignRecommendation } from '@/types';
 import { CheckCircle } from 'lucide-react';
 
@@ -24,6 +24,20 @@ export default async function PrinciplePage(props: PrinciplePageProps) {
   if (!principle) {
     notFound();
   }
+
+  // Terminal output for verification
+  console.log('---');
+  console.log(`[+] Loading data for principle: "${principle.title || principle.Title}" (ID: ${id})`);
+  console.log(`[+] Found ${culturalTexts.length} cultural text(s).`);
+  if (culturalTexts.length > 0) {
+    console.log('  - Sample Text:', culturalTexts[0].title || culturalTexts[0].Title);
+  }
+  console.log(`[+] Found ${designRecommendations.length} design recommendation(s).`);
+  if (designRecommendations.length > 0) {
+    console.log('  - Sample Recommendation:', designRecommendations[0].title || designRecommendations[0].Title);
+  }
+  console.log('---');
+
 
   const breadcrumbItems = [
     { label: 'Principles', href: '/principles' },

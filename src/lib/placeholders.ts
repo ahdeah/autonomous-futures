@@ -92,8 +92,8 @@ export function getPlaceholderConfig(text: CulturalText) {
 /**
  * Normalize genre strings to match our placeholder keys
  */
-function normalizeGenre(genre: string): keyof typeof GENRE_PLACEHOLDERS {
-  const normalized = genre.toLowerCase().trim();
+function normalizeGenre(genre: any): keyof typeof GENRE_PLACEHOLDERS {
+  const normalized = String(genre).toLowerCase().trim();
   
   // Direct matches
   if (normalized in GENRE_PLACEHOLDERS) {
@@ -179,9 +179,12 @@ export function getColorIndex(id: string, colorCount: number): number {
 /**
  * Get fallback metadata for missing fields
  */
-export function getMetadataFallback(field: string, value?: string): string {
-  if (value && value.trim()) {
-    return value.trim();
+export function getMetadataFallback(field: string, value?: any): string {
+  // Coerce value to string and check if it has content
+  const stringValue = value ? String(value).trim() : '';
+  
+  if (stringValue) {
+    return stringValue;
   }
   
   switch (field) {
@@ -213,7 +216,7 @@ export function getMetadataFallback(field: string, value?: string): string {
  */
 export function hasRealImage(text: CulturalText): boolean {
   const imageUrl = text.image || text.Image;
-  return !!(imageUrl && imageUrl.trim() && imageUrl !== 'placeholder');
+  return typeof imageUrl === 'string' && imageUrl.trim() !== '' && imageUrl !== 'placeholder';
 }
 
 /**
@@ -221,8 +224,9 @@ export function hasRealImage(text: CulturalText): boolean {
  */
 export function hasAccessLink(text: CulturalText): boolean {
   const links = text.links || text.Links;
-  return !!(links && links.trim());
+  return typeof links === 'string' && links.trim() !== '';
 }
+
 
 /**
  * Get placeholder image path for static placeholder images (if we add them later)

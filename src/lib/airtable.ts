@@ -171,10 +171,8 @@ export const airtableApi = {
     try {
       const base = getBase();
       const record = await base(TABLES.PRINCIPLES).find(id);
-      return {
-        id: record.id,
-        ...record.fields
-      } as Principle;
+      const transformed = transformPrinciple({ id: record.id, ...record.fields });
+      return transformed;
     } catch (error) {
       console.error(`Error fetching principle ${id}:`, error);
       return null;
@@ -255,29 +253,31 @@ export const airtableApi = {
 export const connections = {
   // Get cultural texts related to a principle
   async getCulturalTextsForPrinciple(principleId: string): Promise<CulturalText[]> {
-    return fetchRecords<CulturalText>(TABLES.CULTURAL_TEXTS, {
-      filterByFormula: `FIND("${principleId}", {Principles})`,
+    const allTexts = await fetchRecords<CulturalText>(TABLES.CULTURAL_TEXTS, {
       sort: [{ field: 'Title', direction: 'asc' }]
     });
+    // The `principles` field is now an array thanks to our transform function
+    return allTexts.filter(text => text.principles?.includes(principleId));
   },
 
   // Get principles related to a cultural text
   async getPrinciplesForCulturalText(textId: string): Promise<Principle[]> {
-    return fetchRecords<Principle>(TABLES.PRINCIPLES, {
-      filterByFormula: `FIND("${textId}", {Cultural Texts})`,
+    const allPrinciples = await fetchRecords<Principle>(TABLES.PRINCIPLES, {
       sort: [
-        { field: 'Is Overarching', direction: 'desc' },
+        { field: 'IsOverarching', direction: 'desc' },
         { field: 'Title', direction: 'asc' }
       ]
     });
+    return allPrinciples.filter(p => p.culturalTexts?.includes(textId));
   },
 
   // Get design recommendations for a principle
   async getDesignRecommendationsForPrinciple(principleId: string): Promise<DesignRecommendation[]> {
-    return fetchRecords<DesignRecommendation>(TABLES.DESIGN_RECOMMENDATIONS, {
-      filterByFormula: `FIND("${principleId}", {Principles})`,
+     const allRecs = await fetchRecords<DesignRecommendation>(TABLES.DESIGN_RECOMMENDATIONS, {
       sort: [{ field: 'Title', direction: 'asc' }]
     });
+    // The `principles` field on recommendations is also an array after transform
+    return allRecs.filter(rec => rec.principles?.includes(principleId));
   }
 };
 
