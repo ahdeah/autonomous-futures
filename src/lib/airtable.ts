@@ -273,6 +273,31 @@ export const connections = {
     return allPrinciples.filter(p => p.culturalTexts?.includes(textId));
   },
 
+  // Get profiles related to a principle
+  async getProfilesForPrinciple(principleId: string): Promise<Profile[]> {
+    const allProfiles = await fetchRecords<Profile>(TABLES.PROFILES);
+    // The `principles` field is now an array thanks to our transform function
+    return allProfiles.filter(profile => profile.principles?.includes(principleId));
+  },
+
+  // Get principles related to a principle (this requires more complex logic)
+  async getRelatedPrinciples(currentPrinciple: Principle): Promise<Principle[]> {
+    if (!currentPrinciple || !currentPrinciple.culturalTexts?.length) {
+      return [];
+    }
+
+    const allPrinciples = await fetchRecords<Principle>(TABLES.PRINCIPLES);
+    const related = allPrinciples.filter(p => {
+      // Exclude the current principle
+      if (p.id === currentPrinciple.id) return false;
+
+      // Find if there is a shared cultural text
+      return p.culturalTexts?.some(textId => currentPrinciple.culturalTexts?.includes(textId));
+    });
+
+    return related.slice(0, 3); // Return up to 3 related principles
+  },
+
   // Get design recommendations for a principle
   async getDesignRecommendationsForPrinciple(principleId: string): Promise<DesignRecommendation[]> {
      const allRecs = await fetchRecords<DesignRecommendation>(TABLES.DESIGN_RECOMMENDATIONS, {
@@ -281,6 +306,7 @@ export const connections = {
     // The `principles` field on recommendations is also an array after transform
     return allRecs.filter(rec => rec.principles?.includes(principleId));
   }
+  
 };
 
 export default airtableApi;
