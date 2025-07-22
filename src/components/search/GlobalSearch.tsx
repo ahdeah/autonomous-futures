@@ -20,7 +20,6 @@ function useDebounce(value: string, delay: number) {
   return debouncedValue;
 }
 
-// MODIFIED: This function is now corrected to handle 'recommendation' links.
 const getResultUrl = (item: any): string => {
     switch (item.type) {
         case 'principle':
@@ -28,13 +27,10 @@ const getResultUrl = (item: any): string => {
         case 'text':
             return `/cultural-texts/${item.id}`;
         case 'recommendation':
-            // A recommendation is linked to one or more principles.
-            // We will link to the page of the first principle in its list.
             if (item.principles && item.principles.length > 0) {
                 const firstPrincipleId = item.principles[0];
                 return `/principles/${firstPrincipleId}`;
             }
-            // As a safe fallback, link to the main principles page if no connection is found.
             return '/principles';
         default:
             return '/';
@@ -52,6 +48,7 @@ export function GlobalSearch() {
     ?
     Object.groupBy(results, (item: any) => item.type)
     : {};
+    
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
@@ -63,6 +60,13 @@ export function GlobalSearch() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  // MODIFIED: Added a handler to reset the search state on link click.
+  const handleResultClick = () => {
+    setQuery('');
+    setIsFocused(false);
+  };
+
   return (
     <div className="relative" ref={searchContainerRef}>
       <div className="relative">
@@ -93,11 +97,14 @@ export function GlobalSearch() {
               <ul>
                 {(items as any[]).map((item: any) => (
                   <li key={item.id} className="border-b last:border-b-0">
-                    <Link href={getResultUrl(item)} className="block p-3 hover:bg-af-light-sage">
-                      <p className="font-semibold text-af-charcoal">{item.title ||
-                      item.Title}</p>
-                      <p className="text-xs text-af-primary truncate">{item.description ||
-                      item.Content}</p>
+                    {/* MODIFIED: Added the onClick handler to the Link component. */}
+                    <Link
+                      href={getResultUrl(item)}
+                      className="block p-3 hover:bg-af-light-sage"
+                      onClick={handleResultClick}
+                    >
+                      <p className="font-semibold text-af-charcoal">{item.title || item.Title}</p>
+                      <p className="text-xs text-af-primary truncate">{item.description || item.Content}</p>
                     </Link>
                   </li>
                 ))}
