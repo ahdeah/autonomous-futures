@@ -20,15 +20,22 @@ function useDebounce(value: string, delay: number) {
   return debouncedValue;
 }
 
-const getResultUrl = (item: any) => {
-    // Corrected to match your app's routing structure
+// MODIFIED: This function is now corrected to handle 'recommendation' links.
+const getResultUrl = (item: any): string => {
     switch (item.type) {
         case 'principle':
             return `/principles/${item.id}`;
         case 'text':
-            return `/cultural-texts/${item.id}`; // Corrected Link
+            return `/cultural-texts/${item.id}`;
         case 'recommendation':
-            return `/principles`; // No specific page, link to principles overview
+            // A recommendation is linked to one or more principles.
+            // We will link to the page of the first principle in its list.
+            if (item.principles && item.principles.length > 0) {
+                const firstPrincipleId = item.principles[0];
+                return `/principles/${firstPrincipleId}`;
+            }
+            // As a safe fallback, link to the main principles page if no connection is found.
+            return '/principles';
         default:
             return '/';
     }
@@ -42,9 +49,9 @@ export function GlobalSearch() {
   const searchContainerRef = useRef<HTMLDivElement>(null);
 
   const groupedResults = results
-    ? Object.groupBy(results, (item: any) => item.type)
+    ?
+    Object.groupBy(results, (item: any) => item.type)
     : {};
-
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
@@ -56,7 +63,6 @@ export function GlobalSearch() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
-
   return (
     <div className="relative" ref={searchContainerRef}>
       <div className="relative">
@@ -88,8 +94,10 @@ export function GlobalSearch() {
                 {(items as any[]).map((item: any) => (
                   <li key={item.id} className="border-b last:border-b-0">
                     <Link href={getResultUrl(item)} className="block p-3 hover:bg-af-light-sage">
-                      <p className="font-semibold text-af-charcoal">{item.title || item.Title}</p>
-                      <p className="text-xs text-af-primary truncate">{item.description || item.Content}</p>
+                      <p className="font-semibold text-af-charcoal">{item.title ||
+                      item.Title}</p>
+                      <p className="text-xs text-af-primary truncate">{item.description ||
+                      item.Content}</p>
                     </Link>
                   </li>
                 ))}
