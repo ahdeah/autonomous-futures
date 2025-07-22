@@ -17,21 +17,32 @@ interface CulturalTextPageProps {
 
 export default async function CulturalTextPage({ params }: CulturalTextPageProps) {
   const { id } = await params;
-  const text = await airtableApi.getCulturalText(id);
+
+  // --- Start of Correction ---
+  // 1. Fetch the cultural text and all related profiles simultaneously.
+  const [text, relatedProfiles] = await Promise.all([
+    airtableApi.getCulturalText(id),
+    connections.getProfilesForCulturalText(id),
+  ]);
+  // --- End of Correction ---
 
   if (!text) {
     notFound();
   }
 
-  // Fetch connected data
+  // --- Start of Correction ---
+  // 2. Find the author's name from the fetched profiles.
+  // The 'text.author' field holds the ID of the author.
+  const authorRecord = relatedProfiles.find(profile => profile.id === text.author);
+  const authorName = authorRecord?.name || text.author; // Fallback to ID if not found
+  // --- End of Correction ---
+
+  // Fetch other connected data
   const [
     relatedPrinciples,
-    relatedProfiles,
   ] = await Promise.all([
     connections.getPrinciplesForCulturalText(id),
-    connections.getProfilesForCulturalText(id), 
   ]);
-
   const breadcrumbItems = [
     { label: 'Cultural Texts', href: '/cultural-texts' },
     { label: text.title || text.Title, href: `/cultural-texts/${id}` },
@@ -48,7 +59,10 @@ export default async function CulturalTextPage({ params }: CulturalTextPageProps
             <header>
               <h1 className="text-display text-af-charcoal">{text.title || text.Title}</h1>
               <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 text-af-primary">
-                <span className="flex items-center gap-2"><BookUser size={16} /> {getMetadataFallback('author', text.author || text.By)}</span>
+                {/* --- Start of Correction --- */}
+                {/* 3. Use the resolved authorName for display */}
+                <span className="flex items-center gap-2"><BookUser size={16} /> {getMetadataFallback('author', authorName)}</span>
+                {/* --- End of Correction --- */}
                 <span className="flex items-center gap-2"><Milestone size={16} /> {getMetadataFallback('year', text.year?.toString())}</span>
                 <span className="flex items-center gap-2"><Globe size={16} /> {getMetadataFallback('country', text.country)}</span>
               </div>
@@ -62,7 +76,7 @@ export default async function CulturalTextPage({ params }: CulturalTextPageProps
                       Access Online <ExternalLink size={16} className="inline ml-2" />
                     </a>
                   ) : (
-                   <button className="btn-disabled mt-4 w-full" disabled>Find Online (Coming Soon)</button>
+                    <button className="btn-disabled mt-4 w-full" disabled>Find Online (Coming Soon)</button>
                   )}
               </div>
               <div className="flex-grow">
@@ -78,7 +92,7 @@ export default async function CulturalTextPage({ params }: CulturalTextPageProps
                     <PrincipleCard key={principle.id} principle={principle} />
                   ))}
                 </div>
-               ) : (
+              ) : (
                 <p className="text-af-placeholder-text italic">No principles are currently connected to this text.</p>
               )}
             </section>
@@ -86,7 +100,7 @@ export default async function CulturalTextPage({ params }: CulturalTextPageProps
 
           {/* Sidebar */}
           <aside className="space-y-12">
-           <section>
+            <section>
               <h2 className="text-heading mb-6 text-af-charcoal">Creators & Thinkers</h2>
               {relatedProfiles && relatedProfiles.length > 0 ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-1 gap-4">
@@ -94,7 +108,7 @@ export default async function CulturalTextPage({ params }: CulturalTextPageProps
                     <ProfileCard key={profile.id} profile={profile} />
                   ))}
                 </div>
-               ) : (
+              ) : (
                 <p className="text-af-placeholder-text italic">No creators are connected to this text yet.</p>
               )}
             </section>
