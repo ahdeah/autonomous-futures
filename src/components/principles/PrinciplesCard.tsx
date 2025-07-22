@@ -35,7 +35,7 @@ export function PrincipleCard({ principle }: PrincipleCardProps) {
       variant="default"
       hover={true}
       className="h-full flex flex-col"
-      onClick={() => { /* Navigation will be handled by the Link */ }}
+      // Removed the onClick prop that was causing the error
     >
       <CardHeader>
         <CardTitle className="text-lg">{title}</CardTitle>

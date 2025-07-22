@@ -26,7 +26,7 @@ const getResultUrl = (item: any) => {
         case 'principle':
             return `/principles/${item.id}`;
         case 'text':
-            return `/cultural-texts`; // Link to the main page; a detail page would be `/cultural-texts/${item.id}`
+            return `/cultural-texts/${item.id}`; // Corrected Link
         case 'recommendation':
             return `/principles`; // No specific page, link to principles overview
         default:

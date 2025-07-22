@@ -298,6 +298,11 @@ export const connections = {
     return related.slice(0, 3); // Return up to 3 related principles
   },
 
+  async getProfilesForCulturalText(textId: string): Promise<Profile[]> {
+    const allProfiles = await fetchRecords<Profile>(TABLES.PROFILES);
+    return allProfiles.filter(profile => profile.culturalTexts?.includes(textId));
+  },
+
   // Get design recommendations for a principle
   async getDesignRecommendationsForPrinciple(principleId: string): Promise<DesignRecommendation[]> {
      const allRecs = await fetchRecords<DesignRecommendation>(TABLES.DESIGN_RECOMMENDATIONS, {

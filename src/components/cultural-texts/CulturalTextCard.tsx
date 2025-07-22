@@ -27,32 +27,36 @@ export function CulturalTextCard({ text }: CulturalTextCardProps) {
   }
 
   return (
-    <Card variant="default" className="flex flex-col h-full">
-      <CardHeader className="p-0">
-        <CulturalTextImage text={text} size="md" className="rounded-t-af-lg" />
-      </CardHeader>
+    <Card variant="default" className="flex flex-col h-full group">
+      {/* The Link now wraps only the content that should navigate to the detail page */}
+      <Link href={`/cultural-texts/${text.id}`} className="flex flex-col flex-grow">
+        <CardHeader className="p-0">
+          <CulturalTextImage text={text} size="md" className="rounded-t-af-lg" />
+        </CardHeader>
 
-      <CardContent className="flex-grow p-4 space-y-2">
-        <CardTitle className="text-lg leading-snug">{title}</CardTitle>
-        <div className="text-sm text-af-primary">
-          <p>{author}</p>
-          <p className="text-xs text-af-placeholder-text">{year ? year.toString() : getMetadataFallback('year')}</p>
-        </div>
-        {connections.length > 0 && (
-          <div className="pt-2">
-            <ConnectionIndicator connections={connections} />
+        <CardContent className="flex-grow p-4 space-y-2">
+          <CardTitle className="text-lg leading-snug group-hover:text-af-sage transition-colors">{title}</CardTitle>
+          <div className="text-sm text-af-primary">
+            <p>{author}</p>
+            <p className="text-xs text-af-placeholder-text">{year ? year.toString() : getMetadataFallback('year')}</p>
           </div>
-        )}
-      </CardContent>
+          {connections.length > 0 && (
+            <div className="pt-2">
+              <ConnectionIndicator connections={connections} />
+            </div>
+          )}
+        </CardContent>
+      </Link>
 
-      <CardFooter className="p-4 pt-0">
+      {/* The footer is now outside the Link component, preventing nesting */}
+      <CardFooter className="p-4 pt-0 mt-auto">
         {hasAccessLink(text) ? (
           <a
-            href={text.links || text.Links}
+            href={text.links || text.Links!}
             target="_blank"
             rel="noopener noreferrer"
             className="btn-accent text-sm w-full"
-            onClick={(e) => e.stopPropagation()} // Prevent card click when clicking link
+            onClick={(e) => e.stopPropagation()} // Prevent any potential event bubbling
           >
             Access Online
           </a>
