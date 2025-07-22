@@ -1,8 +1,34 @@
 // src/app/cultural-texts/page.tsx
+'use client';
+
+import { useState, useMemo } from 'react';
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs';
 import { CulturalTextGrid } from '@/components/cultural-texts/CulturalTextGrid';
+import { CulturalTextFilters } from '@/components/cultural-texts/CulturalTextFilters';
+import { useCulturalTexts } from '@/hooks/useAirtable';
+import { CulturalText } from '@/types';
 
 export default function CulturalTextsPage() {
+  const { data: culturalTexts = [], isLoading, error } = useCulturalTexts();
+  const [filters, setFilters] = useState({
+    genre: '',
+    medium: '',
+    country: '',
+  });
+
+  const handleFilterChange = (filterType: 'genre' | 'medium' | 'country', value: string) => {
+    setFilters(prev => ({ ...prev, [filterType]: value }));
+  };
+
+  const filteredTexts = useMemo(() => {
+    return culturalTexts.filter(text => {
+      const genreMatch = filters.genre ? text.genres?.includes(filters.genre) : true;
+      const mediumMatch = filters.medium ? text.medium === filters.medium : true;
+      const countryMatch = filters.country ? text.country === filters.country : true;
+      return genreMatch && mediumMatch && countryMatch;
+    });
+  }, [culturalTexts, filters]);
+
   const breadcrumbItems = [{ label: 'Cultural Texts', href: '/cultural-texts' }];
 
   return (
@@ -19,7 +45,19 @@ export default function CulturalTextsPage() {
           </p>
         </div>
 
-        <CulturalTextGrid />
+        {isLoading && <p className="text-center">Loading filters and texts...</p>}
+        {error && <p className="text-center text-red-600">Error loading data.</p>}
+        
+        {!isLoading && !error && (
+          <>
+            <CulturalTextFilters 
+              texts={culturalTexts}
+              filters={filters}
+              onFilterChange={handleFilterChange}
+            />
+            <CulturalTextGrid texts={filteredTexts} />
+          </>
+        )}
       </div>
     </main>
   );

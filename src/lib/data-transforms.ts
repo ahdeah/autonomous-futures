@@ -2,10 +2,26 @@
 import type { CulturalText, Principle, DesignRecommendation } from '@/types';
 
 /**
+ * Safely converts a potential genre field (string or array) into a string.
+ */
+function getGenreString(genreField: any): string {
+  if (Array.isArray(genreField)) {
+    return genreField.join(',');
+  }
+  if (typeof genreField === 'string') {
+    return genreField;
+  }
+  return '';
+}
+
+/**
  * Transform Airtable Cultural Text records to match both CSV field names and component expectations
  * Based on actual CSV structure: Title, By, Country, Year, Medium, Genres, Image, Links, etc.
  */
 export function transformCulturalText(record: any): CulturalText {
+  const rawGenreField = record.Genres || record.genres || record.genre;
+  const genreString = getGenreString(rawGenreField);
+
   const transformed = {
     // Map CSV fields to interface
     id: record.id,
@@ -21,7 +37,7 @@ export function transformCulturalText(record: any): CulturalText {
     "Text Year": record["Text Year"] || record.textYear,
     "Exact Date": record["Exact Date"] || record.exactDate,
     Medium: record.Medium || record.medium,
-    Genres: record.Genres || record.genres || record.genre, // CSV uses 'Genres' (plural)
+    Genres: record.Genres, // Keep original for reference
     "Genres (Web)": record["Genres (Web)"] || record.genresWeb,
     Image: record.Image || record.image,
     "Related Records": record["Related Records"] || record.relatedRecords,
@@ -39,7 +55,8 @@ export function transformCulturalText(record: any): CulturalText {
     country: record.Country || record.country,
     year: record.Year || record.year,
     medium: record.Medium || record.medium,
-    genre: record.Genres || record.genres || record.genre, // Map Genres → genre
+    genre: genreString.split(',')[0].trim(),
+    genres: parseRelationField(genreString),
     image: record.Image || record.image,
     links: record.Links || record.links,
     description: record.Content || record.content || record.description,
@@ -121,7 +138,7 @@ export function transformDesignRecommendation(record: any): DesignRecommendation
  */
 export function parseRelationField(field: string | string[] | undefined): string[] {
   if (!field) return [];
-  if (Array.isArray(field)) return field;
+  if (Array.isArray(field)) return field.map(item => String(item).trim()).filter(Boolean);
   if (typeof field === 'string') {
     // Split by comma and clean up whitespace
     return field.split(',').map(item => item.trim()).filter(item => item.length > 0);
@@ -133,21 +150,23 @@ export function parseRelationField(field: string | string[] | undefined): string
  * Apply fallback data for missing fields to ensure graceful degradation
  */
 export function applyDataFallbacks(item: CulturalText): CulturalText {
+  const genreString = getGenreString(item.Genres || item.genres || item.genre);
+
   return {
     ...item,
     author: item.author || item.By || 'Various',
     country: item.country || item.Country || 'Various',
     year: item.year || item.Year || undefined,
     medium: item.medium || item.Medium || 'Mixed Media',
-    genre: item.genre || item.Genres || 'Speculative Fiction',
+    genre: item.genre || genreString.split(',')[0].trim() || 'Speculative Fiction',
+    genres: item.genres?.length ? item.genres : parseRelationField(genreString),
     description: item.description || item.Content || 'Description coming soon.',
     links: item.links || item.Links || undefined,
     image: item.image || item.Image || undefined,
     
-    // Parse relation fields from strings to arrays
-    principles: parseRelationField(item.Principles || item.principles),
-    designRecommendations: parseRelationField(item["Design Recommendations"] || item.designRecommendations),
-    technology: parseRelationField(item.Technology || item.technology),
+    principles: item.principles || parseRelationField(item.Principles),
+    designRecommendations: item.designRecommendations || parseRelationField(item["Design Recommendations"]),
+    technology: item.technology || parseRelationField(item.Technology),
   };
 }
 

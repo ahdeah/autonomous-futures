@@ -34,7 +34,8 @@ export interface CulturalText {
   country?: string;
   year?: number;
   medium?: string;
-  genre?: string;                   // Singular form for display
+  genre?: string;                   // Singular form for display (first genre)
+  genres?: string[];                  // Parsed array of genres for filtering
   image?: string;
   links?: string;
   description?: string;
