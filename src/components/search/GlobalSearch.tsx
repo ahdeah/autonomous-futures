@@ -26,12 +26,15 @@ const getResultUrl = (item: any): string => {
             return `/principles/${item.id}`;
         case 'text':
             return `/cultural-texts/${item.id}`;
+        // --- Start of Correction ---
+        // Generates a URL with an anchor (#) that jumps to the specific recommendation.
         case 'recommendation':
             if (item.principles && item.principles.length > 0) {
                 const firstPrincipleId = item.principles[0];
-                return `/principles/${firstPrincipleId}`;
+                return `/principles/${firstPrincipleId}#${item.id}`; // e.g., /principles/recABC#recXYZ
             }
-            return '/principles';
+            return '/principles'; // Fallback if no principle is linked
+        // --- End of Correction ---
         default:
             return '/';
     }
@@ -45,8 +48,7 @@ export function GlobalSearch() {
   const searchContainerRef = useRef<HTMLDivElement>(null);
 
   const groupedResults = results
-    ?
-    Object.groupBy(results, (item: any) => item.type)
+    ? Object.groupBy(results, (item: any) => item.type)
     : {};
     
   useEffect(() => {
@@ -61,7 +63,6 @@ export function GlobalSearch() {
     };
   }, []);
 
-  // MODIFIED: Added a handler to reset the search state on link click.
   const handleResultClick = () => {
     setQuery('');
     setIsFocused(false);
@@ -97,7 +98,6 @@ export function GlobalSearch() {
               <ul>
                 {(items as any[]).map((item: any) => (
                   <li key={item.id} className="border-b last:border-b-0">
-                    {/* MODIFIED: Added the onClick handler to the Link component. */}
                     <Link
                       href={getResultUrl(item)}
                       className="block p-3 hover:bg-af-light-sage"
