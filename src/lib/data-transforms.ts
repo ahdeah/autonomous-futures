@@ -15,6 +15,16 @@ function getGenreString(genreField: any): string {
 }
 
 /**
+ * NEW: Cleans a URL string by removing extraneous characters.
+ */
+function cleanUrl(url: string | undefined): string | undefined {
+  if (!url || typeof url !== 'string') return undefined;
+  // Remove leading '<' and trailing '>' and trim whitespace
+  const cleaned = url.replace(/^</, '').replace(/>$/, '').trim();
+  return cleaned || undefined; // Return undefined if the string is empty after cleaning
+}
+
+/**
  * Transform Airtable Cultural Text records to match both CSV field names and component expectations
  * Based on actual CSV structure: Title, By, Country, Year, Medium, Genres, Image, Links, etc.
  */
@@ -58,7 +68,7 @@ export function transformCulturalText(record: any): CulturalText {
     genre: genreString.split(',')[0].trim(),
     genres: parseRelationField(genreString),
     image: record.Image || record.image,
-    links: record.Links || record.links,
+    links: cleanUrl(record.Links || record.links), // THE FIX
     description: record.Content || record.content || record.description,
     
     // Parse relation fields from strings to arrays
@@ -161,7 +171,7 @@ export function applyDataFallbacks(item: CulturalText): CulturalText {
     genre: item.genre || genreString.split(',')[0].trim() || 'Speculative Fiction',
     genres: item.genres?.length ? item.genres : parseRelationField(genreString),
     description: item.description || item.Content || 'Description coming soon.',
-    links: item.links || item.Links || undefined,
+    links: cleanUrl(item.links || item.Links), // THE FIX
     image: item.image || item.Image || undefined,
     
     principles: item.principles || parseRelationField(item.Principles),
