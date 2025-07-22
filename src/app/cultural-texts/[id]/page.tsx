@@ -29,7 +29,7 @@ export default async function CulturalTextPage({ params }: CulturalTextPageProps
     relatedProfiles,
   ] = await Promise.all([
     connections.getPrinciplesForCulturalText(id),
-    connections.getProfilesForCulturalText(id), // Assuming this function exists or will be created
+    connections.getProfilesForCulturalText(id), 
   ]);
 
   const breadcrumbItems = [
@@ -54,9 +54,9 @@ export default async function CulturalTextPage({ params }: CulturalTextPageProps
               </div>
             </header>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="md:col-span-1">
-                <CulturalTextImage text={text} size="xl" className="rounded-af-lg" showOverlay={false} />
+            <div className="flex flex-col md:flex-row gap-8 items-start">
+              <div className="w-full md:w-1/3 flex-shrink-0">
+                <CulturalTextImage text={text} size="xl" className="w-full rounded-af-lg" showOverlay={false} />
                  {hasAccessLink(text) ? (
                     <a href={getMetadataFallback('links', text.links)} target="_blank" rel="noopener noreferrer" className="btn-accent mt-4 w-full text-center">
                       Access Online <ExternalLink size={16} className="inline ml-2" />
@@ -65,7 +65,7 @@ export default async function CulturalTextPage({ params }: CulturalTextPageProps
                     <button className="btn-disabled mt-4 w-full" disabled>Find Online (Coming Soon)</button>
                   )}
               </div>
-              <div className="md:col-span-2">
+              <div className="flex-grow">
                 <p className="text-af-primary text-lg leading-relaxed">{text.description || text.Content}</p>
               </div>
             </div>
