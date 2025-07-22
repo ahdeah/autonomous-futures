@@ -1,5 +1,5 @@
 // src/lib/data-transforms.ts
-import type { CulturalText, Principle, DesignRecommendation } from '@/types';
+import type { CulturalText, Principle, DesignRecommendation, Profile } from '@/types'; // MODIFIED: Added Profile type
 
 /**
  * Safely converts a potential genre field (string or array) into a string.
@@ -68,7 +68,7 @@ export function transformCulturalText(record: any): CulturalText {
     genre: genreString.split(',')[0].trim(),
     genres: parseRelationField(genreString),
     image: record.Image || record.image,
-    links: cleanUrl(record.Links || record.links), // THE FIX
+    links: cleanUrl(record.Links || record.links),
     description: record.Content || record.content || record.description,
     
     // Parse relation fields from strings to arrays
@@ -76,7 +76,6 @@ export function transformCulturalText(record: any): CulturalText {
     designRecommendations: parseRelationField(record["Design Recommendations"] || record.designRecommendations),
     technology: parseRelationField(record.Technology || record.technology),
   } as CulturalText;
-
   return transformed;
 }
 
@@ -117,7 +116,6 @@ export function transformPrinciple(record: any): Principle {
     culturalTexts: parseRelationField(record["Cultural Texts"] || record.culturalTexts),
     designRecommendations: parseRelationField(record["Design Recommendations"] || record.designRecommendations),
   } as Principle;
-
   return transformed;
 }
 
@@ -143,6 +141,30 @@ export function transformDesignRecommendation(record: any): DesignRecommendation
   } as DesignRecommendation;
 }
 
+// NEW: Add this function to handle Profile transformations
+export function transformProfile(record: any): Profile {
+  return {
+    id: record.id,
+    
+    // Original Airtable field names
+    Name: record.Name || '',
+    Content: record.Content,
+    Photo: record.Photo,
+    Principles: record.Principles,
+    "Cultural Texts": record["Cultural Texts"],
+
+    // Normalized properties for component use
+    name: record.Name || '',
+    content: record.Content,
+    photo: record.Photo,
+
+    // This is the critical part that fixes the bug
+    principles: parseRelationField(record.Principles),
+    culturalTexts: parseRelationField(record["Cultural Texts"]),
+    
+  } as Profile;
+}
+
 /**
  * Parse comma-separated strings into arrays for relation fields
  */
@@ -161,7 +183,6 @@ export function parseRelationField(field: string | string[] | undefined): string
  */
 export function applyDataFallbacks(item: CulturalText): CulturalText {
   const genreString = getGenreString(item.Genres || item.genres || item.genre);
-
   return {
     ...item,
     author: item.author || item.By || 'Various',
@@ -171,7 +192,7 @@ export function applyDataFallbacks(item: CulturalText): CulturalText {
     genre: item.genre || genreString.split(',')[0].trim() || 'Speculative Fiction',
     genres: item.genres?.length ? item.genres : parseRelationField(genreString),
     description: item.description || item.Content || 'Description coming soon.',
-    links: cleanUrl(item.links || item.Links), // THE FIX
+    links: cleanUrl(item.links || item.Links),
     image: item.image || item.Image || undefined,
     
     principles: item.principles || parseRelationField(item.Principles),
@@ -186,7 +207,6 @@ export function applyDataFallbacks(item: CulturalText): CulturalText {
  */
 export function normalizeThemeForFiltering(theme: string): string {
   if (!theme || typeof theme !== 'string') return '';
-  
   const normalized = theme.toLowerCase().trim();
   
   // Map known theme variations to consistent slugs

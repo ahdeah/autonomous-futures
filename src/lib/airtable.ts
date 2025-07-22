@@ -1,5 +1,6 @@
+// src/lib/airtable.ts
 import Airtable from 'airtable';
-import { transformCulturalText, transformPrinciple, transformDesignRecommendation, applyDataFallbacks } from './data-transforms';
+import { transformCulturalText, transformPrinciple, transformDesignRecommendation, applyDataFallbacks, transformProfile } from './data-transforms'; // MODIFIED: Added transformProfile
 import type { 
   CulturalText, 
   Principle, 
@@ -35,7 +36,6 @@ function getBase() {
     const airtable = new Airtable({
       apiKey: process.env.AIRTABLE_API_TOKEN
     });
-    
     baseInstance = airtable.base(process.env.AIRTABLE_BASE_ID);
   }
   
@@ -54,10 +54,8 @@ async function fetchRecords<T>(
 ): Promise<T[]> {
   try {
     const base = getBase();
-    
     // Build select options, removing undefined values
     const selectOptions: any = {};
-    
     if (options.filterByFormula) {
       selectOptions.filterByFormula = options.filterByFormula;
     }
@@ -78,20 +76,22 @@ async function fetchRecords<T>(
     const records = await base(tableName)
       .select(selectOptions)
       .all();
-
+      
     return records.map(record => {
       const rawData = {
         id: record.id,
         ...record.fields
       };
       
-      // Apply transformations based on table type
+      // MODIFIED: Added logic to transform Profile records
       if (tableName === TABLES.CULTURAL_TEXTS) {
         return applyDataFallbacks(transformCulturalText(rawData));
       } else if (tableName === TABLES.PRINCIPLES) {
         return transformPrinciple(rawData);
       } else if (tableName === TABLES.DESIGN_RECOMMENDATIONS) {
         return transformDesignRecommendation(rawData);
+      } else if (tableName === TABLES.PROFILES) {
+        return transformProfile(rawData);
       }
       
       // Default transformation for other tables
@@ -113,10 +113,8 @@ export const airtableApi = {
     maxRecords?: number;
   }): Promise<CulturalText[]> {
     let filterFormula = '';
-    
     if (filters) {
       const conditions: string[] = [];
-      
       // Use correct Airtable field names
       if (filters.genre) {
         conditions.push(`{Genres} = "${filters.genre}"`);
@@ -210,7 +208,6 @@ export const airtableApi = {
   // NEW: Efficiently search across all relevant tables
   async searchAll(query: string): Promise<(CulturalText | Principle | DesignRecommendation)[]> {
     const lowerQuery = query.toLowerCase();
-
     const searchFormula = (fields: string[]) => `OR(${fields.map(field => `SEARCH(LOWER("${lowerQuery}"), LOWER({${field}}))`).join(', ')})`;
 
     const culturalTextFormula = searchFormula(['Title', 'By', 'Content', 'Genres', 'Medium']);
