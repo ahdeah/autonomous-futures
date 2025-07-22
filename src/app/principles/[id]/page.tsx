@@ -5,8 +5,9 @@ import { airtableApi, connections } from '@/lib/airtable';
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs';
 import { CulturalTextCard } from '@/components/cultural-texts/CulturalTextCard';
 import { ProfileCard } from '@/components/profiles/ProfileCard';
+import { Card, CardContent } from '@/components/ui/Card'; // MODIFIED: Imported Card components
 import { Principle } from '@/types';
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle, Users } from 'lucide-react'; // MODIFIED: Added Users icon
 
 interface PrinciplePageProps {
   params: {
@@ -59,7 +60,7 @@ export default async function PrinciplePage({ params }: PrinciplePageProps) {
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-         <div className="lg:col-span-2 space-y-12">
+          <div className="lg:col-span-2 space-y-12">
             {/* Design Recommendations Section */}
             <section>
               <h2 className="text-heading mb-6 text-af-charcoal">How to Apply This Principle</h2>
@@ -68,16 +69,16 @@ export default async function PrinciplePage({ params }: PrinciplePageProps) {
                   {designRecommendations.map((rec) => (
                     <div key={rec.id} className="bg-af-warm-white p-4 rounded-af-md border border-gray-100 flex items-start gap-4">
                       <CheckCircle className="w-5 h-5 text-af-sage mt-1 flex-shrink-0" />
-                       <div>
+                      <div>
                         <h3 className="font-semibold text-af-charcoal">{rec.title || rec.Title}</h3>
                         {rec.content && <p className="text-sm text-af-primary mt-1">{rec.content}</p>}
                       </div>
-                     </div>
+                    </div>
                   ))}
                 </div>
               ) : (
                 <p className="text-af-placeholder-text italic">No design recommendations are connected to this principle yet.</p>
-               )}
+              )}
             </section>
             
             {/* Cultural Foundation Section */}
@@ -90,13 +91,14 @@ export default async function PrinciplePage({ params }: PrinciplePageProps) {
                     <CulturalTextCard key={text.id} text={text} />
                   ))}
                 </div>
-               ) : (
+              ) : (
                 <p className="text-af-placeholder-text italic">No cultural texts are connected to this principle yet.</p>
               )}
             </section>
           </div>
 
           <aside className="space-y-12">
+            
             {/* Creator Profiles Section */}
             <section>
               <h2 className="text-heading mb-6 text-af-charcoal">Creator Profiles</h2>
@@ -106,31 +108,42 @@ export default async function PrinciplePage({ params }: PrinciplePageProps) {
                     <ProfileCard key={profile.id} profile={profile} />
                   ))}
                 </div>
-               ) : (
-                <p className="text-af-placeholder-text italic">No creators are connected to this principle yet.</p>
+              ) : (
+                // MODIFIED: Replaced the <p> tag with a placeholder Card
+                <Card variant="default" className="text-center bg-af-light-sage/50 border-dashed border-af-sage/30">
+                  <CardContent className="p-8">
+                    <div className="flex flex-col items-center justify-center h-full">
+                      <Users size={32} className="text-af-primary mb-4" />
+                      <h3 className="font-semibold text-af-charcoal">Visionaries Loading...</h3>
+                      <p className="text-sm text-af-primary mt-2 max-w-xs mx-auto">
+                        The brilliant minds inspiring this principle will be featured here soon.
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
               )}
             </section>
             
             {/* Related Principles Section */}
-           <section>
+            <section>
               <h2 className="text-heading mb-6 text-af-charcoal">Related Principles</h2>
               {relatedPrinciples && relatedPrinciples.length > 0 ? (
                 <div className="space-y-4">
                   {relatedPrinciples.map((relPrinciple) => (
                     <Link href={`/principles/${relPrinciple.id}`} key={relPrinciple.id} className="block group">
                       <div className="p-4 bg-af-warm-white rounded-af-md border border-gray-100 hover:border-af-sage/50 hover:shadow-af-sm transition-all">
-                         <h4 className="font-semibold text-af-charcoal group-hover:text-af-sage">{relPrinciple.title || relPrinciple.Title}</h4>
+                        <h4 className="font-semibold text-af-charcoal group-hover:text-af-sage">{relPrinciple.title || relPrinciple.Title}</h4>
                         <p className="text-xs text-af-primary">{relPrinciple.theme}</p>
                       </div>
                     </Link>
-                  ))}
+                   ))}
                 </div>
               ) : (
                 <p className="text-af-placeholder-text italic">No related principles found.</p>
               )}
             </section>
           </aside>
-         </div>
+        </div>
       </div>
     </main>
   );
