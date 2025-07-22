@@ -31,6 +31,7 @@ export function ProfileCard({ profile }: ProfileCardProps) {
             <Image
               src={photoUrl}
               alt={`Photo of ${name}`}
+              
               fill
               className="rounded-full object-cover"
             />
@@ -41,7 +42,8 @@ export function ProfileCard({ profile }: ProfileCardProps) {
       </CardHeader>
       <CardContent className="p-4 pt-0">
         <h3 className="font-semibold text-af-charcoal">{name}</h3>
-        {bio && (
+      
+       {bio && (
           <p className="text-xs text-af-primary mt-2">
             {bio.length > 100 ? `${bio.substring(0, 100)}...` : bio}
           </p>

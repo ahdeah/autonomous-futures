@@ -1,5 +1,5 @@
 // src/lib/data-transforms.ts
-import type { CulturalText, Principle, DesignRecommendation, Profile } from '@/types'; // MODIFIED: Added Profile type
+import type { CulturalText, Principle, DesignRecommendation, Profile } from '@/types';
 
 /**
  * Safely converts a potential genre field (string or array) into a string.
@@ -17,11 +17,13 @@ function getGenreString(genreField: any): string {
 /**
  * Cleans a URL string by removing extraneous characters.
  */
-function cleanUrl(url: string | undefined): string | undefined {
+function cleanUrl(url: string | undefined): string |
+undefined {
   if (!url || typeof url !== 'string') return undefined;
   // Remove leading '<' and trailing '>' and trim whitespace
   const cleaned = url.replace(/^</, '').replace(/>$/, '').trim();
-  return cleaned || undefined; // Return undefined if the string is empty after cleaning
+  return cleaned ||
+undefined; // Return undefined if the string is empty after cleaning
 }
 
 /**
@@ -29,47 +31,74 @@ function cleanUrl(url: string | undefined): string | undefined {
  * Based on actual CSV structure: Title, By, Country, Year, Medium, Genres, Image, Links, etc.
  */
 export function transformCulturalText(record: any): CulturalText {
-  const rawGenreField = record.Genres || record.genres || record.genre;
+  const rawGenreField = record.Genres ||
+record.genres || record.genre;
   const genreString = getGenreString(rawGenreField);
+
+  // --- Start of Correction ---
+  // The 'By' field from Airtable, when it's a linked record, comes in as an array (e.g., ['recXXXXXXXX']).
+  // This logic correctly extracts the single ID string.
+  let authorIdOrName: string | undefined = undefined;
+  if (Array.isArray(record.By) && record.By.length > 0) {
+    authorIdOrName = record.By[0];
+  } else if (typeof record.By === 'string') {
+    authorIdOrName = record.By;
+  }
+  // --- End of Correction ---
 
   const transformed = {
     // Map CSV fields to interface
     id: record.id,
     
     // Original Airtable field names (from CSV)
-    Title: record.Title || record.title || '',
-    By: record.By || record.by || record.author,
-    "By (Web)": record["By (Web)"] || record.byWeb,
+    Title: record.Title ||
+record.title || '',
+    By: record.By,
+    "By (Web)": record["By (Web)"] ||
+record.byWeb,
     Content: record.Content || record.content || record.description,
-    Country: record.Country || record.country,
+    Country: record.Country ||
+record.country,
     "Text Location": record["Text Location"] || record.textLocation,
-    Year: record.Year || record.year,
+    Year: record.Year ||
+record.year,
     "Text Year": record["Text Year"] || record.textYear,
-    "Exact Date": record["Exact Date"] || record.exactDate,
+    "Exact Date": record["Exact Date"] ||
+record.exactDate,
     Medium: record.Medium || record.medium,
     Genres: record.Genres, // Keep original for reference
-    "Genres (Web)": record["Genres (Web)"] || record.genresWeb,
+    "Genres (Web)": record["Genres (Web)"] ||
+record.genresWeb,
     Image: record.Image || record.image,
-    "Related Records": record["Related Records"] || record.relatedRecords,
+    "Related Records": record["Related Records"] ||
+record.relatedRecords,
     Links: record.Links || record.links,
-    Principles: record.Principles || record.principles,
+    Principles: record.Principles ||
+record.principles,
     "Principles (Web)": record["Principles (Web)"] || record.principlesWeb,
-    "Design Recommendations": record["Design Recommendations"] || record.designRecommendations,
+    "Design Recommendations": record["Design Recommendations"] ||
+record.designRecommendations,
     "Design Recommendations (Web)": record["Design Recommendations (Web)"] || record.designRecommendationsWeb,
-    Technology: record.Technology || record.technology,
+    Technology: record.Technology ||
+record.technology,
     Tags: record.Tags || record.tags,
     
     // Normalized property names for component compatibility
-    title: record.Title || record.title || '',
-    author: record.By || record.by || record.author,
-    country: record.Country || record.country,
+    title: record.Title ||
+record.title || '',
+    author: authorIdOrName, // Use the corrected ID or name
+    country: record.Country ||
+record.country,
     year: record.Year || record.year,
-    medium: record.Medium || record.medium,
+    medium: record.Medium ||
+record.medium,
     genre: genreString.split(',')[0].trim(),
     genres: parseRelationField(genreString),
-    image: record.Image || record.image,
+    image: record.Image ||
+record.image,
     links: cleanUrl(record.Links || record.links),
-    description: record.Content || record.content || record.description,
+    description: record.Content || record.content ||
+record.description,
     
     // Parse relation fields from strings to arrays
     principles: parseRelationField(record.Principles || record.principles),
@@ -85,31 +114,40 @@ export function transformCulturalText(record: any): CulturalText {
  */
 export function transformPrinciple(record: any): Principle {
   // Handle IsOverarching field - CSV uses "IsOverarching" with "Yes"/"No" values
-  const isOverarchingValue = record.IsOverarching || record.isOverarching || record.OVERARCHING;
+  const isOverarchingValue = record.IsOverarching ||
+record.isOverarching || record.OVERARCHING;
   const isOverarching = isOverarchingValue === "Yes" || 
                        isOverarchingValue === true || 
                        isOverarchingValue === "TRUE" ||
-                       isOverarchingValue === "true";
+isOverarchingValue === "true";
 
   const transformed = {
     // Map CSV fields to interface
     id: record.id,
     
     // Original Airtable field names (from CSV)
-    Title: record.Title || record.title || '',
+    Title: record.Title ||
+record.title || '',
     IsOverarching: record.IsOverarching || record.isOverarching,
-    Theme: record.Theme || record.theme, // CSV uses 'Theme' (capital T)
-    Content: record.Content || record.content || '',
+    Theme: record.Theme ||
+record.theme, // CSV uses 'Theme' (capital T)
+    Content: record.Content || record.content ||
+'',
     Profiles: record.Profiles || record.profiles,
-    "Cultural Texts": record["Cultural Texts"] || record.culturalTexts,
+    "Cultural Texts": record["Cultural Texts"] ||
+record.culturalTexts,
     "Design Recommendations": record["Design Recommendations"] || record.designRecommendations,
-    "Design Recommendations (Web)": record["Design Recommendations (Web)"] || record.designRecommendationsWeb,
+    "Design Recommendations (Web)": record["Design Recommendations (Web)"] ||
+record.designRecommendationsWeb,
     
     // Normalized property names for component compatibility
-    title: record.Title || record.title || '',
+    title: record.Title ||
+record.title || '',
     isOverarching: isOverarching,
-    theme: record.Theme || record.theme, // Map Theme → theme for component filtering
-    description: record.Content || record.content || '',
+    theme: record.Theme ||
+record.theme, // Map Theme → theme for component filtering
+    description: record.Content || record.content ||
+'',
     
     // Parse relation fields from strings to arrays
     profiles: parseRelationField(record.Profiles || record.profiles),
@@ -122,7 +160,8 @@ export function transformPrinciple(record: any): Principle {
 export function transformDesignRecommendation(record: any): DesignRecommendation {
   return {
     id: record.id,
-    Title: record.Title || '',
+    Title: record.Title ||
+'',
     Content: record.Content || '',
     Footnotes: record.Footnotes,
     "Cultural Texts": record["Cultural Texts"],
@@ -130,7 +169,8 @@ export function transformDesignRecommendation(record: any): DesignRecommendation
     Technology: record.Technology,
     
     // Normalized properties
-    title: record.Title || '',
+    title: record.Title ||
+'',
     content: record.Content || '',
     footnotes: record.Footnotes,
     
@@ -147,14 +187,16 @@ export function transformProfile(record: any): Profile {
     id: record.id,
     
     // Original Airtable field names
-    Name: record.Name || '',
+    Name: record.Name ||
+'',
     Content: record.Content,
     Photo: record.Photo,
     Principles: record.Principles,
     "Cultural Texts": record["Cultural Texts"],
 
     // Normalized properties for component use
-    name: record.Name || '',
+    name: record.Name ||
+'',
     content: record.Content,
     photo: record.Photo,
 
@@ -185,18 +227,24 @@ export function applyDataFallbacks(item: CulturalText): CulturalText {
   const genreString = getGenreString(item.Genres || item.genres || item.genre);
   return {
     ...item,
-    author: item.author || item.By || 'Various',
+    author: item.author || item.By ||
+'Various',
     country: item.country || item.Country || 'Various',
-    year: item.year || item.Year || undefined,
+    year: item.year || item.Year ||
+undefined,
     medium: item.medium || item.Medium || 'Mixed Media',
-    genre: item.genre || genreString.split(',')[0].trim() || 'Speculative Fiction',
+    genre: item.genre || genreString.split(',')[0].trim() ||
+'Speculative Fiction',
     genres: item.genres?.length ? item.genres : parseRelationField(genreString),
-    description: item.description || item.Content || 'Description coming soon.',
+    description: item.description || item.Content ||
+'Description coming soon.',
     links: cleanUrl(item.links || item.Links),
-    image: item.image || item.Image || undefined,
+    image: item.image || item.Image ||
+undefined,
     
     principles: item.principles || parseRelationField(item.Principles),
-    designRecommendations: item.designRecommendations || parseRelationField(item["Design Recommendations"]),
+    designRecommendations: item.designRecommendations ||
+parseRelationField(item["Design Recommendations"]),
     technology: item.technology || parseRelationField(item.Technology),
   };
 }

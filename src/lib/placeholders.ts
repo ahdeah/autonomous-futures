@@ -196,7 +196,7 @@ export function getMetadataFallback(field: string, value?: any): string {
       return 'Various';
     case 'year':
     case 'Year':
-      return 'Date TBD';
+      return 'YYYY';
     case 'medium':
     case 'Medium':
       return 'Mixed Media';
