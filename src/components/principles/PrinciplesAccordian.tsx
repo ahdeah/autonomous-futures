@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { usePrinciples } from '@/hooks/useAirtable';
+import { usePrinciples } from '@/hooks/use-airtable-data';
 import { Principle } from '@/types';
 import { ChevronDown } from 'lucide-react';
 import { PrincipleCard } from './PrinciplesCard';

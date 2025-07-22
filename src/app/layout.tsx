@@ -2,7 +2,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { QueryProvider } from "@/components/providers/QueryProvider";
-import { Header } from "@/components/layout/Header"; // Import the new Header
+import { Header } from "@/components/layout/Header";
+import { Footer } from "@/components/layout/Footer"; // Import the new Footer
 
 export const metadata: Metadata = {
   title: "Autonomous Futures - Centering Marginalized Voices in Technology",
@@ -23,11 +24,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased bg-af-background text-af-charcoal">
+      <body className="antialiased bg-af-background text-af-charcoal flex flex-col min-h-screen">
         <QueryProvider>
-          <Header /> {/* Add the Header here */}
-          {children}
-          {/* A Footer component would go here later */}
+          <Header />
+          <main className="flex-grow">
+            {children}
+          </main>
+          <Footer /> {/* Add the Footer here */}
         </QueryProvider>
       </body>
     </html>

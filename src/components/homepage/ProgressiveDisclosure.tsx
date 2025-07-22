@@ -3,7 +3,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { usePrinciples } from '@/hooks/useAirtable';
+import { usePrinciples } from '@/hooks/use-airtable-data';
 import { Principle } from '@/types';
 import { ChevronDown, ChevronUp, Plus, Minus } from 'lucide-react';
 

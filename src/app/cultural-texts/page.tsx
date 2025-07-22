@@ -5,7 +5,7 @@ import { useState, useMemo } from 'react';
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs';
 import { CulturalTextGrid } from '@/components/cultural-texts/CulturalTextGrid';
 import { CulturalTextFilters } from '@/components/cultural-texts/CulturalTextFilters';
-import { useCulturalTexts } from '@/hooks/useAirtable';
+import { useCulturalTexts } from '@/hooks/use-airtable-data';
 import { CulturalText } from '@/types';
 
 export default function CulturalTextsPage() {
