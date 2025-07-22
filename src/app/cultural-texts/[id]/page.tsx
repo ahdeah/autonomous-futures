@@ -62,7 +62,7 @@ export default async function CulturalTextPage({ params }: CulturalTextPageProps
                       Access Online <ExternalLink size={16} className="inline ml-2" />
                     </a>
                   ) : (
-                    <button className="btn-disabled mt-4 w-full" disabled>Find Online (Coming Soon)</button>
+                   <button className="btn-disabled mt-4 w-full" disabled>Find Online (Coming Soon)</button>
                   )}
               </div>
               <div className="flex-grow">
@@ -78,7 +78,7 @@ export default async function CulturalTextPage({ params }: CulturalTextPageProps
                     <PrincipleCard key={principle.id} principle={principle} />
                   ))}
                 </div>
-              ) : (
+               ) : (
                 <p className="text-af-placeholder-text italic">No principles are currently connected to this text.</p>
               )}
             </section>
@@ -86,7 +86,7 @@ export default async function CulturalTextPage({ params }: CulturalTextPageProps
 
           {/* Sidebar */}
           <aside className="space-y-12">
-            <section>
+           <section>
               <h2 className="text-heading mb-6 text-af-charcoal">Creators & Thinkers</h2>
               {relatedProfiles && relatedProfiles.length > 0 ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-1 gap-4">
@@ -94,7 +94,7 @@ export default async function CulturalTextPage({ params }: CulturalTextPageProps
                     <ProfileCard key={profile.id} profile={profile} />
                   ))}
                 </div>
-              ) : (
+               ) : (
                 <p className="text-af-placeholder-text italic">No creators are connected to this text yet.</p>
               )}
             </section>

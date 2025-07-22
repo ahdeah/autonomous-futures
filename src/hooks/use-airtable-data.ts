@@ -1,4 +1,4 @@
-import { useQuery, UseQueryOptions } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { queryKeys, handleQueryError } from '@/lib/react-query';
 import type { 
   CulturalText, 
@@ -54,7 +54,6 @@ const api = {
     return result.data;
   },
 
-  // NEW SEARCH FUNCTION
   async search(query: string): Promise<(CulturalText | Principle | DesignRecommendation)[]> {
     if (!query) return [];
     const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
@@ -82,19 +81,6 @@ export function useCulturalTexts(filters?: {
   });
 }
 
-export function useCulturalText(id: string) {
-  return useQuery({
-    queryKey: queryKeys.culturalTexts.detail(id),
-    queryFn: async () => {
-      // This would need its own API route for individual items
-      // For now, we'll skip this implementation
-      return null;
-    },
-    enabled: false, // Disable for now
-    staleTime: 10 * 60 * 1000,
-  });
-}
-
 // Principles hooks
 export function usePrinciples() {
   return useQuery({
@@ -104,25 +90,13 @@ export function usePrinciples() {
   });
 }
 
-export function usePrinciple(id: string) {
-  return useQuery({
-    queryKey: queryKeys.principles.detail(id),
-    queryFn: async () => {
-      // This would need its own API route for individual items
-      return null;
-    },
-    enabled: false, // Disable for now
-    staleTime: 10 * 60 * 1000,
-  });
-}
-
-// NEW SEARCH HOOK
+// SEARCH HOOK
 export function useSearch(query: string) {
     return useQuery({
       queryKey: ['search', query],
       queryFn: () => api.search(query),
-      enabled: !!query && query.length > 2, // Only run query if it's not empty and has more than 2 characters
-      staleTime: 5 * 60 * 1000, // 5 minutes
+      enabled: !!query && query.length > 2,
+      staleTime: 5 * 60 * 1000,
     });
 }
 
@@ -138,14 +112,14 @@ export function useOverarchingPrinciples() {
     ...rest,
   };
 }
+// NOTE: The following hooks are not yet implemented with API routes.
+// They are kept here as placeholders for future development.
 
-// Simplified hooks for the remaining functions (disabled for now)
 export function useDesignRecommendations(principleId?: string) {
   return useQuery({
     queryKey: queryKeys.designRecommendations.list(principleId),
     queryFn: async () => [],
     enabled: false,
-    staleTime: 10 * 60 * 1000,
   });
 }
 
@@ -154,7 +128,6 @@ export function useProfiles() {
     queryKey: queryKeys.profiles.list(),
     queryFn: async () => [],
     enabled: false,
-    staleTime: 15 * 60 * 1000,
   });
 }
 
@@ -163,75 +136,5 @@ export function useTechnologyTaxonomy() {
     queryKey: queryKeys.technology.list(),
     queryFn: async () => [],
     enabled: false,
-    staleTime: 15 * 60 * 1000,
   });
-}
-
-// Connection hooks (disabled for now)
-export function useCulturalTextsForPrinciple(principleId: string) {
-  return useQuery({
-    queryKey: queryKeys.connections.culturalTextsForPrinciple(principleId),
-    queryFn: async () => [],
-    enabled: false,
-    staleTime: 5 * 60 * 1000,
-  });
-}
-
-export function usePrinciplesForCulturalText(textId: string) {
-  return useQuery({
-    queryKey: queryKeys.connections.principlesForCulturalText(textId),
-    queryFn: async () => [],
-    enabled: false,
-    staleTime: 5 * 60 * 1000,
-  });
-}
-
-export function useDesignRecommendationsForPrinciple(principleId: string) {
-  return useQuery({
-    queryKey: queryKeys.connections.designRecommendationsForPrinciple(principleId),
-    queryFn: async () => [],
-    enabled: false,
-    staleTime: 10 * 60 * 1000,
-  });
-}
-
-// Utility hook for getting aggregated data for a principle page
-export function usePrinciplePageData(principleId: string) {
-  const principleQuery = usePrinciple(principleId);
-  const culturalTextsQuery = useCulturalTextsForPrinciple(principleId);
-  const designRecommendationsQuery = useDesignRecommendationsForPrinciple(principleId);
-  
-  return {
-    principle: principleQuery.data,
-    culturalTexts: culturalTextsQuery.data || [],
-    designRecommendations: designRecommendationsQuery.data || [],
-    isLoading: principleQuery.isLoading || culturalTextsQuery.isLoading || designRecommendationsQuery.isLoading,
-    error: principleQuery.error || culturalTextsQuery.error || designRecommendationsQuery.error,
-    isError: principleQuery.isError || culturalTextsQuery.isError || designRecommendationsQuery.isError,
-  };
-}
-
-// Utility hook for homepage data
-export function useHomepageData() {
-  const principlesQuery = useOverarchingPrinciples();
-  const culturalTextsQuery = useCulturalTexts({ maxRecords: 6 }); // Featured texts
-  
-  return {
-    overarchingPrinciples: principlesQuery.data || [],
-    featuredCulturalTexts: culturalTextsQuery.data || [],
-    isLoading: principlesQuery.isLoading || culturalTextsQuery.isLoading,
-    error: principlesQuery.error || culturalTextsQuery.error,
-    isError: principlesQuery.isError || culturalTextsQuery.isError,
-  };
-}
-
-// Error boundary hook
-export function useDataErrorHandler() {
-  return {
-    handleError: (error: unknown) => {
-      const errorMessage = handleQueryError(error);
-      console.error('Data fetching error:', errorMessage, error);
-      return errorMessage;
-    },
-  };
 }
