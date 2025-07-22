@@ -6,6 +6,7 @@ import { CulturalText } from '@/types';
 import { getMetadataFallback, hasAccessLink } from '@/lib/placeholders';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/Card';
 import { CulturalTextImage } from '@/components/ui/CulturalTextImage';
+import { ConnectionIndicator } from '@/components/ui/ConnectionIndicator';
 
 interface CulturalTextCardProps {
   text: CulturalText;
@@ -16,20 +17,34 @@ export function CulturalTextCard({ text }: CulturalTextCardProps) {
   const author = getMetadataFallback('author', text.author || text.By);
   const year = text.year || text.Year;
 
+  const connections = [];
+  if (text.principles && text.principles.length > 0) {
+    connections.push({
+      type: 'principle' as const,
+      count: text.principles.length,
+      tooltip: `Inspires ${text.principles.length} principles`,
+    });
+  }
+
   return (
     <Card variant="default" className="flex flex-col h-full">
       <CardHeader className="p-0">
         <CulturalTextImage text={text} size="md" className="rounded-t-af-lg" />
       </CardHeader>
-      
+
       <CardContent className="flex-grow p-4 space-y-2">
         <CardTitle className="text-lg leading-snug">{title}</CardTitle>
         <div className="text-sm text-af-primary">
           <p>{author}</p>
           <p className="text-xs text-af-placeholder-text">{year ? year.toString() : getMetadataFallback('year')}</p>
         </div>
+        {connections.length > 0 && (
+          <div className="pt-2">
+            <ConnectionIndicator connections={connections} />
+          </div>
+        )}
       </CardContent>
-      
+
       <CardFooter className="p-4 pt-0">
         {hasAccessLink(text) ? (
           <a

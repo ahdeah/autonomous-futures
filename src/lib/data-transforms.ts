@@ -15,7 +15,7 @@ function getGenreString(genreField: any): string {
 }
 
 /**
- * NEW: Cleans a URL string by removing extraneous characters.
+ * Cleans a URL string by removing extraneous characters.
  */
 function cleanUrl(url: string | undefined): string | undefined {
   if (!url || typeof url !== 'string') return undefined;
