@@ -1,3 +1,4 @@
+// src/hooks/use-airtable-data.ts
 import { useQuery, UseQueryOptions } from '@tanstack/react-query';
 import { queryKeys, handleQueryError } from '@/lib/react-query';
 import type { 
@@ -53,6 +54,18 @@ const api = {
     
     return result.data;
   },
+
+  // NEW SEARCH FUNCTION
+  async search(query: string): Promise<(CulturalText | Principle | DesignRecommendation)[]> {
+    if (!query) return [];
+    const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+    const result: ApiResponse<(CulturalText | Principle | DesignRecommendation)[]> = await response.json();
+
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to perform search');
+    }
+    return result.data;
+  }
 };
 
 // Cultural Texts hooks
@@ -121,6 +134,16 @@ export function usePrinciple(id: string) {
     enabled: false, // Disable for now
     staleTime: 10 * 60 * 1000,
   });
+}
+
+// NEW SEARCH HOOK
+export function useSearch(query: string) {
+    return useQuery({
+      queryKey: ['search', query],
+      queryFn: () => api.search(query),
+      enabled: !!query && query.length > 2, // Only run query if it's not empty and has more than 2 characters
+      staleTime: 5 * 60 * 1000, // 5 minutes
+    });
 }
 
 // Get only the overarching principles (main themes)
