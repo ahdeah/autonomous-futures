@@ -150,10 +150,8 @@ export const airtableApi = {
     try {
       const base = getBase();
       const record = await base(TABLES.CULTURAL_TEXTS).find(id);
-      return {
-        id: record.id,
-        ...record.fields
-      } as CulturalText;
+      const transformed = applyDataFallbacks(transformCulturalText({ id: record.id, ...record.fields }));
+      return transformed;
     } catch (error) {
       console.error(`Error fetching cultural text ${id}:`, error);
       return null;
@@ -162,7 +160,6 @@ export const airtableApi = {
 
   // Fetch all principles
   async getPrinciples(): Promise<Principle[]> {
-    // Start simple - no sorting to avoid field name issues
     return fetchRecords<Principle>(TABLES.PRINCIPLES, {
       maxRecords: 50 // Reasonable limit
     });
@@ -184,17 +181,15 @@ export const airtableApi = {
   // Fetch design recommendations
   async getDesignRecommendations(principleId?: string): Promise<DesignRecommendation[]> {
     let filterFormula = '';
-    
     if (principleId) {
       filterFormula = `FIND("${principleId}", {Principles})`;
     }
-
     return fetchRecords<DesignRecommendation>(TABLES.DESIGN_RECOMMENDATIONS, {
       filterByFormula: filterFormula || undefined,
       sort: [{ field: 'Title', direction: 'asc' }]
     });
   },
-
+  
   // Fetch profiles
   async getProfiles(): Promise<Profile[]> {
     return fetchRecords<Profile>(TABLES.PROFILES, {
@@ -212,42 +207,34 @@ export const airtableApi = {
     });
   },
 
-  // Search across cultural texts
-  async searchCulturalTexts(query: string, filters?: {
-    genre?: string;
-    medium?: string;
-    country?: string;
-  }): Promise<CulturalText[]> {
-    const conditions: string[] = [];
-    
-    // Add search conditions for title, author, and description
-    if (query.trim()) {
-      const searchConditions = [
-        `SEARCH(LOWER("${query.toLowerCase()}"), LOWER({Title}))`,
-        `SEARCH(LOWER("${query.toLowerCase()}"), LOWER({Author}))`,
-        `SEARCH(LOWER("${query.toLowerCase()}"), LOWER({Description}))`
-      ];
-      conditions.push(`OR(${searchConditions.join(', ')})`);
-    }
-    
-    // Add filter conditions
-    if (filters?.genre) {
-      conditions.push(`{Genre} = "${filters.genre}"`);
-    }
-    if (filters?.medium) {
-      conditions.push(`{Medium} = "${filters.medium}"`);
-    }
-    if (filters?.country) {
-      conditions.push(`{Country} = "${filters.country}"`);
-    }
-    
-    const filterFormula = conditions.length > 0 ? `AND(${conditions.join(', ')})` : '';
+  // NEW: Efficiently search across all relevant tables
+  async searchAll(query: string): Promise<(CulturalText | Principle | DesignRecommendation)[]> {
+    const lowerQuery = query.toLowerCase();
 
-    return fetchRecords<CulturalText>(TABLES.CULTURAL_TEXTS, {
-      filterByFormula: filterFormula || undefined,
-      maxRecords: 50,
-      sort: [{ field: 'Title', direction: 'asc' }]
-    });
+    const searchFormula = (fields: string[]) => `OR(${fields.map(field => `SEARCH(LOWER("${lowerQuery}"), LOWER({${field}}))`).join(', ')})`;
+
+    const culturalTextFormula = searchFormula(['Title', 'By', 'Content', 'Genres', 'Medium']);
+    const principleFormula = searchFormula(['Title', 'Content', 'Theme']);
+    const recommendationFormula = searchFormula(['Title', 'Content']);
+
+    try {
+      const [culturalTexts, principles, designRecommendations] = await Promise.all([
+        fetchRecords<CulturalText>(TABLES.CULTURAL_TEXTS, { filterByFormula: culturalTextFormula, maxRecords: 25 }),
+        fetchRecords<Principle>(TABLES.PRINCIPLES, { filterByFormula: principleFormula, maxRecords: 25 }),
+        fetchRecords<DesignRecommendation>(TABLES.DESIGN_RECOMMENDATIONS, { filterByFormula: recommendationFormula, maxRecords: 25 }),
+      ]);
+
+      const results = [
+        ...culturalTexts.map(item => ({ ...item, type: 'text' })),
+        ...principles.map(item => ({ ...item, type: 'principle' })),
+        ...designRecommendations.map(item => ({ ...item, type: 'recommendation' })),
+      ];
+
+      return results;
+    } catch (error) {
+      console.error('Error in searchAll:', error);
+      throw new Error('Failed to perform search across all tables.');
+    }
   }
 };
 
@@ -258,7 +245,6 @@ export const connections = {
     const allTexts = await fetchRecords<CulturalText>(TABLES.CULTURAL_TEXTS, {
       sort: [{ field: 'Title', direction: 'asc' }]
     });
-    // The `principles` field is now an array thanks to our transform function
     return allTexts.filter(text => text.principles?.includes(principleId));
   },
 
@@ -276,26 +262,20 @@ export const connections = {
   // Get profiles related to a principle
   async getProfilesForPrinciple(principleId: string): Promise<Profile[]> {
     const allProfiles = await fetchRecords<Profile>(TABLES.PROFILES);
-    // The `principles` field is now an array thanks to our transform function
     return allProfiles.filter(profile => profile.principles?.includes(principleId));
   },
 
-  // Get principles related to a principle (this requires more complex logic)
+  // Get principles related to a principle
   async getRelatedPrinciples(currentPrinciple: Principle): Promise<Principle[]> {
     if (!currentPrinciple || !currentPrinciple.culturalTexts?.length) {
       return [];
     }
-
     const allPrinciples = await fetchRecords<Principle>(TABLES.PRINCIPLES);
     const related = allPrinciples.filter(p => {
-      // Exclude the current principle
       if (p.id === currentPrinciple.id) return false;
-
-      // Find if there is a shared cultural text
       return p.culturalTexts?.some(textId => currentPrinciple.culturalTexts?.includes(textId));
     });
-
-    return related.slice(0, 3); // Return up to 3 related principles
+    return related.slice(0, 3);
   },
 
   async getProfilesForCulturalText(textId: string): Promise<Profile[]> {
@@ -308,10 +288,8 @@ export const connections = {
      const allRecs = await fetchRecords<DesignRecommendation>(TABLES.DESIGN_RECOMMENDATIONS, {
       sort: [{ field: 'Title', direction: 'asc' }]
     });
-    // The `principles` field on recommendations is also an array after transform
     return allRecs.filter(rec => rec.principles?.includes(principleId));
   }
-  
 };
 
 export default airtableApi;
