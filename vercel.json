@@ -4,10 +4,7 @@
   "installCommand": "npm install",
   "framework": "nextjs",
   "outputDirectory": ".next",
-  "env": {
-    "AIRTABLE_API_TOKEN": "@airtable-api-token",
-    "AIRTABLE_BASE_ID": "@airtable-base-id"
-  },
+
   "headers": [
     {
       "source": "/(.*)",
