@@ -23,18 +23,42 @@ export default async function PrinciplePage({ params }: PrinciplePageProps) {
     notFound();
   }
 
-  // Fetch connected data in parallel
+  // --- Start of Correction ---
+  // 1. Fetch all necessary data in parallel, including the profiles for the name lookup.
   const [
-    culturalTexts,
+    culturalTextsRaw,
     designRecommendations,
     creatorProfiles,
     relatedPrinciples,
+    allProfiles, // Fetch all profiles to create the name map
   ] = await Promise.all([
     connections.getCulturalTextsForPrinciple(id),
     connections.getDesignRecommendationsForPrinciple(id),
     connections.getProfilesForPrinciple(id),
     connections.getRelatedPrinciples(principle),
+    airtableApi.getProfiles(), // This is the new addition
   ]);
+
+  // 2. Create the same ID-to-Name map we used in the other fix.
+  const profileNameMap = new Map<string, string>();
+  allProfiles.forEach(profile => {
+    if (profile.id && profile.name) {
+      profileNameMap.set(profile.id, profile.name);
+    }
+  });
+
+  // 3. Map over the cultural texts and replace the author ID with the correct name.
+  const culturalTexts = culturalTextsRaw.map(text => {
+    const authorId = text.author;
+    if (authorId && profileNameMap.has(authorId)) {
+      return {
+        ...text,
+        author: profileNameMap.get(authorId), // Replace ID with Name
+      };
+    }
+    return text;
+  });
+  // --- End of Correction ---
 
   const breadcrumbItems = [
     { label: 'Principles', href: '/principles' },
@@ -50,8 +74,7 @@ export default async function PrinciplePage({ params }: PrinciplePageProps) {
         <header className="mb-12 border-b border-gray-200 pb-8">
           <div className="flex justify-between items-baseline">
             <h1 className="text-display text-af-charcoal">{principle.title || principle.Title}</h1>
-            {principle.theme 
-&& (
+            {principle.theme && (
               <p className="text-af-sage font-semibold">{principle.theme}</p>
             )}
           </div>
@@ -61,16 +84,14 @@ export default async function PrinciplePage({ params }: PrinciplePageProps) {
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-
-           <div className="lg:col-span-2 space-y-12">
+          <div className="lg:col-span-2 space-y-12">
             {/* Design Recommendations Section */}
             <section>
               <h2 className="text-heading mb-6 text-af-charcoal">How to Apply This Principle</h2>
               {designRecommendations && designRecommendations.length > 0 ? (
                 <div className="space-y-4">
                   {designRecommendations.map((rec) => (
-                    // Added id={rec.id} to make this element a linkable anchor.
-                    <div key={rec.id} id={rec.id} className="bg-af-warm-white p-4 rounded-af-md border border-gray-100 flex items-start gap-4 scroll-mt-24">
+                    <div key={rec.id} className="bg-af-warm-white p-4 rounded-af-md border border-gray-100 flex items-start gap-4">
                       <CheckCircle className="w-5 h-5 text-af-sage mt-1 flex-shrink-0" />
                       <div>
                         <h3 className="font-semibold text-af-charcoal">{rec.title || rec.Title}</h3>
@@ -90,6 +111,7 @@ export default async function PrinciplePage({ params }: PrinciplePageProps) {
               <p className="text-af-primary mb-6">This principle is inspired by the following cultural texts:</p>
               {culturalTexts && culturalTexts.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                  {/* This now uses the corrected `culturalTexts` variable */}
                   {culturalTexts.map((text) => (
                     <CulturalTextCard key={text.id} text={text} />
                   ))}
@@ -101,7 +123,7 @@ export default async function PrinciplePage({ params }: PrinciplePageProps) {
           </div>
 
           <aside className="space-y-12">
-           {/* Creator Profiles Section */}
+            {/* Creator Profiles Section */}
             <section>
               <h2 className="text-heading mb-6 text-af-charcoal">Creator Profiles</h2>
               {creatorProfiles && creatorProfiles.length > 0 ? (
@@ -142,9 +164,9 @@ export default async function PrinciplePage({ params }: PrinciplePageProps) {
               ) : (
                 <p className="text-af-placeholder-text italic">No related principles found.</p>
               )}
-           </section>
+            </section>
           </aside>
-         </div>
+        </div>
       </div>
     </main>
   );
