@@ -1,4 +1,7 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+/* --- Start of Correction --- */
+/* Remove the @import rule for Google Fonts */
+/* @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap'); */
+/* --- End of Correction --- */
 
 @tailwind base;
 @tailwind components;
@@ -12,7 +15,8 @@
   body {
     background-color: #FEFBF8;
     color: #374151;
-    font-family: 'Inter', system-ui, sans-serif;
+    /* The font is now applied via a CSS variable in layout.tsx */
+    /* font-family: 'Inter', system-ui, sans-serif; */
     line-height: 1.6;
   }
 

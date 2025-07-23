@@ -1,3 +1,4 @@
+// tailwind.config.js
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: "class",
@@ -25,8 +26,12 @@ module.exports = {
         },
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-        display: ['Satoshi', 'Inter', 'system-ui', 'sans-serif'],
+        // --- Start of Correction ---
+        // Use the CSS variable for the 'sans' font family.
+        // Note: The 'Satoshi' font is not imported and will only work if installed locally on a user's system.
+        sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
+        display: ['Satoshi', 'var(--font-inter)', 'system-ui', 'sans-serif'],
+        // --- End of Correction ---
       },
       borderRadius: {
         'af-sm': '6px',
