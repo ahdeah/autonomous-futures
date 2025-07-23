@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // src/lib/airtable.ts
 import Airtable from 'airtable';
 import { transformCulturalText, transformPrinciple, transformDesignRecommendation, applyDataFallbacks, transformProfile } from './data-transforms'; // MODIFIED: Added transformProfile
