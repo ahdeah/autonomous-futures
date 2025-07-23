@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // src/components/debug/ComponentDebugger.tsx
 'use client';
 

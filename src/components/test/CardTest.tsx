@@ -105,7 +105,7 @@ export function CardTest() {
               <CardDescription>Subtle shadow for minimal elevation</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-af-primary">shadow="sm"</p>
+              <p className="text-sm text-af-primary">shadow=&quot;sm&quot;</p>
             </CardContent>
           </Card>
 
@@ -115,7 +115,7 @@ export function CardTest() {
               <CardDescription>Standard shadow for most use cases</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-af-primary">shadow="md" (default)</p>
+              <p className="text-sm text-af-primary">shadow=&quot;md&quot; (default)</p>
             </CardContent>
           </Card>
 
@@ -125,7 +125,7 @@ export function CardTest() {
               <CardDescription>Prominent shadow for important content</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-af-primary">shadow="lg"</p>
+              <p className="text-sm text-af-primary">shadow=&quot;lg&quot;</p>
             </CardContent>
           </Card>
 
@@ -185,7 +185,7 @@ export function CardTest() {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-af-primary">
-                This card maintains its rotation and doesn't animate on hover.
+                This card maintains its rotation and doesn&apos;t animate on hover.
               </p>
             </CardContent>
           </Card>
@@ -218,7 +218,7 @@ export function CardTest() {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-af-primary">
-                Cards without onClick handlers don't receive focus or 
+                Cards without onClick handlers don&apos;t receive focus or 
                 interactive styling.
               </p>
             </CardContent>

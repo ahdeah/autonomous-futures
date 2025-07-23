@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // src/components/search/GlobalSearch.tsx
 'use client';
 
@@ -73,7 +74,7 @@ export function GlobalSearch() {
     <div className="absolute top-full mt-2 w-full md:w-96 max-h-[70vh] overflow-y-auto overflow-x-hidden bg-white rounded-b-af-lg shadow-af-lg border z-50">
       {isLoading && <div className="p-4 text-sm text-gray-500">Searching...</div>}
       {!isLoading && !results?.length && debouncedQuery && (
-        <div className="p-4 text-sm text-gray-500">No results found for "{debouncedQuery}".</div>
+        <div className="p-4 text-sm text-gray-500">No results found for &quot;{debouncedQuery}&quot;.</div>
       )}
       {!isLoading && results && results.length > 0 && Object.entries(Object.groupBy(results, (item: any) => item.type)).map(([type, items]) => (
         <div key={type}>

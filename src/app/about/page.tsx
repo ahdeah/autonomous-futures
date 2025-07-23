@@ -39,7 +39,7 @@ export default function AboutPage() {
 
           {/* Why "Autonomous" Section */}
           <section>
-            <h2 className="text-heading text-af-charcoal text-center mb-8">Why "Autonomous"</h2>
+            <h2 className="text-heading text-af-charcoal text-center mb-8">Why &quot;Autonomous&quot;</h2>
             <Card variant="default" shadow="lg">
               <CardContent className="p-8 space-y-4 text-af-primary leading-relaxed">
                 <p>

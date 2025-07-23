@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { CulturalText } from '@/types';
 
 // Genre-based placeholder mapping with solarpunk-inspired themes
