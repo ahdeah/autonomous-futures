@@ -9,7 +9,14 @@ import { CulturalTextImage } from '@/components/ui/CulturalTextImage';
 import { getMetadataFallback, hasAccessLink } from '@/lib/placeholders';
 import { ExternalLink, BookUser, Milestone, Globe } from 'lucide-react';
 
-export default async function CulturalTextPage({ params: { id } }: { params: { id: string } }) {
+interface PageProps {
+  params: Promise<{ id: string }>;
+}
+
+export default async function CulturalTextPage({ params }: PageProps) {
+  // Await the params promise as required in Next.js 15
+  const { id } = await params;
+  
   // 1. Fetch the cultural text and all related profiles simultaneously.
   const [text, relatedProfiles] = await Promise.all([
     airtableApi.getCulturalText(id),

@@ -9,7 +9,14 @@ import { Card, CardContent } from '@/components/ui/Card';
 import { Principle } from '@/types';
 import { CheckCircle, Users } from 'lucide-react';
 
-export default async function PrinciplePage({ params: { id } }: { params: { id: string } }) {
+interface PageProps {
+  params: Promise<{ id: string }>;
+}
+
+export default async function PrinciplePage({ params }: PageProps) {
+  // Await the params promise as required in Next.js 15
+  const { id } = await params;
+  
   const principle = await airtableApi.getPrinciple(id);
 
   if (!principle) {
